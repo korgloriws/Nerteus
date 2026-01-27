@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0f1115;
+  --foreground: #e8eaed;
+  --card: #161922;
+  --border: #1f2430;
+  --primary: #6366f1;
+  --muted-foreground: #c1c5d0;
+  --overlay-strong: rgba(0, 0, 0, 0.65);
+  --overlay-soft: rgba(0, 0, 0, 0.45);
+}
+
+:root.light,
+.light {
+  --background: #f4f5fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --border: #d6d9e0;
+  --primary: #4f46e5;
+  --muted-foreground: #475569;
+   /* para degradê claro, usamos branco semi-transparente */
+  --overlay-strong: rgba(255, 255, 255, 0.8);
+  --overlay-soft: rgba(255, 255, 255, 0.55);
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.bg-background { background-color: var(--background); }
+.text-foreground { color: var(--foreground); }
+.bg-card { background-color: var(--card); }
+.border-border { border-color: var(--border); }
+.text-primary { color: var(--primary); }
+.text-muted { color: var(--muted-foreground); }
+
+.tile-overlay { background: linear-gradient(180deg, var(--overlay-strong) 0%, var(--overlay-soft) 55%, transparent 100%); }
+.hero-overlay { background: linear-gradient(90deg, var(--overlay-strong) 0%, var(--overlay-soft) 45%, transparent 100%); }
+.modal-overlay { background: linear-gradient(180deg, var(--overlay-strong) 0%, var(--overlay-soft) 50%, transparent 100%); }
+
+/* Accent helpers (use setting --accent-color in style) */
+.accent-surface { border-color: var(--accent-color, var(--border)); }
+.accent-overlay-vert {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-color) 70%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 35%, transparent) 50%,
+    transparent 100%
+  );
+}
+.accent-overlay-hero {
+  background: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--accent-color) 70%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 45%, transparent) 45%,
+    transparent 100%
+  );
+}
+.accent-overlay-modal {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent-color) 70%, transparent) 0%,
+    color-mix(in srgb, var(--accent-color) 40%, transparent) 55%,
+    transparent 100%
+  );
+}
+.accent-badge {
+  border: 1px solid color-mix(in srgb, var(--accent-color) 55%, transparent);
+  background: color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: var(--foreground);
+}
+
+.accent-tech { --accent-color: #2563eb; }
+.accent-anime { --accent-color: #f59e0b; }
+.accent-games { --accent-color: #16a34a; }
+.accent-pop { --accent-color: #f97316; }
+.accent-science { --accent-color: #dc2626; }
+.accent-default { --accent-color: #6366f1; }
+
+/* Forcing content colors on imported HTML */
+.rich-content * {
+  color: var(--foreground) !important;
+}
+.rich-content a {
+  color: var(--primary) !important;
+}
+
+/* Admin form theming */
+.admin-surface input,
+.admin-surface select,
+.admin-surface textarea {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.admin-surface label {
+  color: var(--muted-foreground);
+}
+.admin-surface .ql-container {
+  background: var(--card);
+  border-color: var(--border);
+}
+.admin-surface .ql-editor {
+  color: var(--foreground);
+}
+.admin-surface .ql-toolbar {
+  background: var(--card);
+  border-color: var(--border);
+}
+.admin-surface section {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.admin-surface [class*="bg-\\[\\#0f1115\\]"],
+.admin-surface [class*="bg-\\[\\#161922\\]"] {
+  background: var(--card) !important;
+}
+.admin-surface [class*="bg-\\[\\#1f2430\\]"],
+.admin-surface [class*="bg-\\[\\#272d3a\\]"] {
+  background: var(--border) !important;
+}
+.admin-surface [class*="border-\\[\\#1f2430\\]"] {
+  border-color: var(--border) !important;
+}
+.admin-surface .text-white {
+  color: var(--foreground) !important;
+}
+.admin-surface [class*="text-\\[\\#c1c5d0\\]"] {
+  color: var(--muted-foreground) !important;
+}
+.force-card {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+

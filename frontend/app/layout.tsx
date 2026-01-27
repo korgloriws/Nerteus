@@ -1,0 +1,22 @@
+import "./globals.css";
+import type { Metadata } from "next";
+import { ReactNode } from "react";
+import { ThemeProviderClient } from "../components/ThemeProviderClient";
+
+export const metadata: Metadata = {
+  title: "Nerteus",
+  description: "Portal Nerteus de posts com vibe de streaming",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="pt-BR">
+      <body className="bg-background text-foreground min-h-screen transition-colors">
+        <ThemeProviderClient>
+          <div className="max-w-6xl mx-auto px-4 py-8">{children}</div>
+        </ThemeProviderClient>
+      </body>
+    </html>
+  );
+}
+
