@@ -15,11 +15,15 @@ type Post = {
 };
 
 async function getPosts(): Promise<Post[]> {
-  const res = await fetch(`${API_URL}/posts`, { next: { revalidate: 30 } });
-  if (!res.ok) {
+  try {
+    const res = await fetch(`${API_URL}/posts`, { next: { revalidate: 30 } });
+    if (!res.ok) {
+      return [];
+    }
+    return res.json();
+  } catch {
     return [];
   }
-  return res.json();
 }
 
 export default async function HomePage() {
