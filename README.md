@@ -33,7 +33,7 @@ uvicorn app.main:app --reload --port 8000
 cd frontend
 set NEXT_PUBLIC_API_URL=http://localhost:8000  # Windows; use export em bash
 npm install
-npm run dev -- --hostname 0.0.0.0 --port 3000
+npm run dev -- --hostname 0.0.0.0 --port 3003
 ```
 
 ### Docker
@@ -42,7 +42,7 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 docker-compose up --build
 ```
 
-Frontend em `http://localhost:3000`, backend em `http://localhost:8000`.
+Frontend em `http://localhost:3003`, backend em `http://localhost:8000`.
 
 ## Painel Admin
 
@@ -78,3 +78,55 @@ Frontend em `http://localhost:3000`, backend em `http://localhost:8000`.
 
 - Ajuste envs em `backend/app/config.py` (secret, credenciais admin, CORS, database_url).
 - Para resetar a base: apague `data/app.db` e rode `python -m app.seed`.
+
+## Deploy na VPS (Ubuntu + Docker)
+
+Arquivos de produção adicionados:
+
+- `docker-compose.prod.yml`
+- `.env.production.example`
+- `frontend/Dockerfile.prod`
+
+### 1) Na VPS, preparar projeto
+
+```bash
+cd /opt/nerteus
+git clone <URL_DO_SEU_REPO> .  # use git pull se já existe
+cp .env.production.example .env.production
+mkdir -p data
+```
+
+Edite `.env.production` e troque, no mínimo:
+
+- `SECRET_KEY`
+- `ADMIN_PASSWORD`
+- `ALLOWED_ORIGINS`
+- `NEXT_PUBLIC_API_URL`
+
+### 2) Subir em produção
+
+```bash
+cd /opt/nerteus
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+```
+
+### 3) Verificar
+
+```bash
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs -f api
+docker compose -f docker-compose.prod.yml logs -f web
+```
+
+Endpoints esperados:
+
+- Frontend: `http://SEU_IP:3003`
+- API health: `http://SEU_IP:8000/health`
+
+### 4) Atualizar versão
+
+```bash
+cd /opt/nerteus
+git pull
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+```
