@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { ThemeProviderClient } from "../components/ThemeProviderClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Nerteus",
   description: "Portal Nerteus de posts com vibe de streaming",
