@@ -5,6 +5,8 @@ import { PostTile } from "../../../components/PostTile";
 import { PostToolbar } from "../../../components/PostToolbar";
 import { resolveColor } from "../../../lib/themeColor";
 
+export const dynamic = "force-dynamic";
+
 type Post = {
   id: number;
   title: string;

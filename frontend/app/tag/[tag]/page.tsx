@@ -4,6 +4,8 @@ import { API_URL } from "../../../lib/api";
 import { PostTile } from "../../../components/PostTile";
 import type { PostTileProps } from "../../../components/PostTile";
 
+export const dynamic = "force-dynamic";
+
 type TagParams = {
   params: { tag: string };
 };

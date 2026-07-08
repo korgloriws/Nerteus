@@ -1,6 +1,8 @@
 import { API_URL } from "../lib/api";
 import { HomeContent } from "./HomeContent";
 
+export const dynamic = "force-dynamic";
+
 type Post = {
   id: number;
   title: string;
