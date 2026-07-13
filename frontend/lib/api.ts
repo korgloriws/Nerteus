@@ -2,11 +2,22 @@ function stripTrailingSlash(url: string) {
   return url.replace(/\/$/, "");
 }
 
+function isLocalhostUrl(url: string) {
+  return /localhost|127\.0\.0\.1/i.test(url);
+}
+
 /** Resolve API base URL for server (SSR) and browser (admin/login). */
 export function getApiUrl(): string {
-  // Browser: same-origin proxy (/api -> backend), avoids CORS and wrong host.
+  const publicUrl = process.env.NEXT_PUBLIC_API_URL
+    ? stripTrailingSlash(process.env.NEXT_PUBLIC_API_URL)
+    : undefined;
+
+  // Browser: call API on same host, port 8000 (public in VPS).
   if (typeof window !== "undefined") {
-    return "/api";
+    if (publicUrl && !isLocalhostUrl(publicUrl)) {
+      return publicUrl;
+    }
+    return `http://${window.location.hostname}:8000`;
   }
 
   const internalUrl = process.env.API_URL_INTERNAL
@@ -15,11 +26,7 @@ export function getApiUrl(): string {
   if (internalUrl) {
     return internalUrl;
   }
-
-  const publicUrl = process.env.NEXT_PUBLIC_API_URL
-    ? stripTrailingSlash(process.env.NEXT_PUBLIC_API_URL)
-    : undefined;
-  if (publicUrl) {
+  if (publicUrl && !isLocalhostUrl(publicUrl)) {
     return publicUrl;
   }
 

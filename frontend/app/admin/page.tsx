@@ -115,7 +115,8 @@ export default function AdminPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.detail || "Falha ao autenticar");
+        const detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail ?? data);
+        throw new Error(detail || `Falha ao autenticar (HTTP ${res.status})`);
       }
       if (!data.access_token) {
         throw new Error("API não retornou token de acesso.");

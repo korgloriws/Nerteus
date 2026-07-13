@@ -22,9 +22,12 @@ if _HAS_PYDANTIC_SETTINGS:
         access_token_expire_minutes: int = 60 * 24
         admin_email: str = "admin@example.com"
         admin_password: str = "admin123"
-        allowed_origins: list[str] = ["*"]
+        allowed_origins: str = "*"
 
         model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+        def cors_origins(self) -> list[str]:
+            return _parse_allowed_origins(self.allowed_origins)
 
 else:
     class Settings(BaseModel):
@@ -34,7 +37,10 @@ else:
         access_token_expire_minutes: int = 60 * 24
         admin_email: str = "admin@example.com"
         admin_password: str = "admin123"
-        allowed_origins: list[str] = Field(default_factory=lambda: ["*"])
+        allowed_origins: str = "*"
+
+        def cors_origins(self) -> list[str]:
+            return _parse_allowed_origins(self.allowed_origins)
 
 
 def _parse_allowed_origins(value: str | None) -> list[str]:
@@ -72,7 +78,7 @@ def get_settings() -> Settings:
         "access_token_expire_minutes": _parse_int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"), 60 * 24),
         "admin_email": os.getenv("ADMIN_EMAIL", "admin@example.com"),
         "admin_password": os.getenv("ADMIN_PASSWORD", "admin123"),
-        "allowed_origins": _parse_allowed_origins(os.getenv("ALLOWED_ORIGINS")),
+        "allowed_origins": os.getenv("ALLOWED_ORIGINS", "*"),
     }
     return Settings(**payload)
 

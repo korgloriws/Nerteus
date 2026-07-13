@@ -4,6 +4,8 @@ services:
     container_name: nerteus-api
     restart: unless-stopped
     working_dir: /app
+    env_file:
+      - .env
     environment:
       DATABASE_URL: ${DATABASE_URL:-sqlite:///./data/app.db}
       SECRET_KEY: ${SECRET_KEY:-change-me}
