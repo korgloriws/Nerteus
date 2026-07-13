@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import type { ReactQuillProps } from "react-quill";
 import React, { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { API_URL } from "../../lib/api";
+import { getApiUrl } from "../../lib/api";
 import { ThemeToggle } from "../../components/ThemeToggle";
 
 const ReactQuill: any = dynamic(() => import("react-quill"), { ssr: false });
@@ -106,19 +106,19 @@ export default function AdminPage() {
       const formData = new URLSearchParams();
       formData.append("username", email);
       formData.append("password", password);
-      const res = await fetch(`${API_URL}/auth/token`, {
+      const res = await fetch(`${getApiUrl()}/auth/token`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.detail || "Falha ao autenticar");
       }
       setToken(data.access_token);
       setMessage("Login ok. Token carregado.");
     } catch (err: any) {
-      setMessage(err.message);
+      setMessage(err?.message || "Não foi possível conectar à API. Verifique se a API está online.");
     }
   }
 
@@ -151,7 +151,7 @@ export default function AdminPage() {
     try {
       const offset = targetPage * pageSize;
       const res = await fetch(
-        `${API_URL}/posts?limit=${pageSize + 1}&offset=${offset}&order_by=-created_at&status_filter=${statusFilter}`
+        `${getApiUrl()}/posts?limit=${pageSize + 1}&offset=${offset}&order_by=-created_at&status_filter=${statusFilter}`
       );
       if (!res.ok) return;
       const data = (await res.json()) as PostListItem[];
@@ -254,7 +254,7 @@ export default function AdminPage() {
         weekday: post.weekday || null,
         day_theme: post.day_theme || null,
       };
-      const url = editingId ? `${API_URL}/posts/${editingId}` : `${API_URL}/posts`;
+      const url = editingId ? `${getApiUrl()}/posts/${editingId}` : `${getApiUrl()}/posts`;
       const method = editingId ? "PUT" : "POST";
       const res = await fetch(url, {
         method,
@@ -306,7 +306,7 @@ export default function AdminPage() {
     const confirmed = window.confirm("Apagar este post? Esta ação não pode ser desfeita.");
     if (!confirmed) return;
     try {
-      const res = await fetch(`${API_URL}/posts/${id}`, {
+      const res = await fetch(`${getApiUrl()}/posts/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
