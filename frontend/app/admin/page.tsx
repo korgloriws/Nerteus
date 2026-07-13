@@ -82,6 +82,7 @@ export default function AdminPage() {
   const [token, setToken] = useState<string | null>(null);
   const [post, setPost] = useState<PostInput>(emptyPost);
   const [message, setMessage] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<PostListItem[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -102,6 +103,7 @@ export default function AdminPage() {
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
     setMessage(null);
+    setLoginLoading(true);
     try {
       const formData = new URLSearchParams();
       formData.append("username", email);
@@ -115,10 +117,15 @@ export default function AdminPage() {
       if (!res.ok) {
         throw new Error(data.detail || "Falha ao autenticar");
       }
+      if (!data.access_token) {
+        throw new Error("API não retornou token de acesso.");
+      }
       setToken(data.access_token);
       setMessage("Login ok. Token carregado.");
     } catch (err: any) {
       setMessage(err?.message || "Não foi possível conectar à API. Verifique se a API está online.");
+    } finally {
+      setLoginLoading(false);
     }
   }
 
@@ -375,11 +382,14 @@ export default function AdminPage() {
             </label>
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-500 text-white rounded px-4 py-2 font-semibold"
+              disabled={loginLoading}
+              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white rounded px-4 py-2 font-semibold"
             >
-              Entrar
+              {loginLoading ? "Entrando..." : "Entrar"}
             </button>
-            {token && <p className="text-sm text-green-400">Token carregado.</p>}
+            {message && (
+              <p className={`text-sm ${message.includes("ok") ? "text-green-400" : "text-red-400"}`}>{message}</p>
+            )}
           </form>
         </section>
       )}
