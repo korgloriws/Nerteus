@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 
-function getApiBase() {
-  return (process.env.API_URL_INTERNAL || "http://api:8000").replace(/\/$/, "");
+export const dynamic = "force-dynamic";
+
+function getApiCandidates(): string[] {
+  const configured = process.env.API_URL_INTERNAL?.replace(/\/$/, "");
+  const candidates = [
+    configured,
+    "http://host.docker.internal:8000",
+    "http://api:8000",
+    "http://nerteus-api:8000",
+  ].filter(Boolean) as string[];
+
+  return [...new Set(candidates)];
 }
 
 async function proxy(req: NextRequest, pathSegments: string[]) {
   const path = pathSegments.join("/");
-  const target = `${getApiBase()}/${path}${req.nextUrl.search}`;
+  const query = req.nextUrl.search;
+  let lastError = "Não foi possível conectar à API.";
 
   const headers = new Headers();
   const contentType = req.headers.get("content-type");
@@ -14,25 +25,35 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
   const authorization = req.headers.get("authorization");
   if (authorization) headers.set("authorization", authorization);
 
-  const init: RequestInit = {
-    method: req.method,
-    headers,
-  };
-
+  let body: ArrayBuffer | undefined;
   if (req.method !== "GET" && req.method !== "HEAD") {
-    init.body = await req.arrayBuffer();
+    body = await req.arrayBuffer();
   }
 
-  const res = await fetch(target, init);
-  const responseHeaders = new Headers();
-  const resContentType = res.headers.get("content-type");
-  if (resContentType) responseHeaders.set("content-type", resContentType);
+  for (const base of getApiCandidates()) {
+    try {
+      const target = `${base}/${path}${query}`;
+      const res = await fetch(target, {
+        method: req.method,
+        headers,
+        body,
+      });
 
-  return new NextResponse(res.body, {
-    status: res.status,
-    statusText: res.statusText,
-    headers: responseHeaders,
-  });
+      const responseHeaders = new Headers();
+      const resContentType = res.headers.get("content-type");
+      if (resContentType) responseHeaders.set("content-type", resContentType);
+
+      return new NextResponse(res.body, {
+        status: res.status,
+        statusText: res.statusText,
+        headers: responseHeaders,
+      });
+    } catch (err: any) {
+      lastError = err?.message || lastError;
+    }
+  }
+
+  return NextResponse.json({ detail: lastError }, { status: 502 });
 }
 
 type RouteContext = { params: { path: string[] } };
