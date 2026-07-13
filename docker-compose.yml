@@ -11,7 +11,6 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-*}
     volumes:
       - ./data:/app/data
     ports:

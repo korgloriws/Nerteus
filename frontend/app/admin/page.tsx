@@ -77,8 +77,8 @@ const emptyPost: PostInput = {
 
 export default function AdminPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [post, setPost] = useState<PostInput>(emptyPost);
   const [message, setMessage] = useState<string | null>(null);
