@@ -1,0 +1,32 @@
+services:
+  api:
+    build: ./backend
+    container_name: nerteus-api
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:///./data/app.db}
+      SECRET_KEY: ${SECRET_KEY:-change-me}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    volumes:
+      - ./backend/app:/app/app
+      - ./data:/app/data
+    ports:
+      - "8000:8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  web:
+    build: ./frontend
+    container_name: nerteus-web
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      API_URL_INTERNAL: http://api:8000
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3003:3003"
+    depends_on:
+      - api

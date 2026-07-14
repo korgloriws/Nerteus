@@ -6,9 +6,9 @@ function getApiCandidates(): string[] {
   const configured = process.env.API_URL_INTERNAL?.replace(/\/$/, "");
   const candidates = [
     configured,
-    "http://host.docker.internal:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
     "http://api:8000",
-    "http://nerteus-api:8000",
   ].filter(Boolean) as string[];
 
   return [...new Set(candidates)];

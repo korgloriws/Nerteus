@@ -77,7 +77,6 @@ const emptyPost: PostInput = {
 
 export default function AdminPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [post, setPost] = useState<PostInput>(emptyPost);
@@ -108,7 +107,7 @@ export default function AdminPage() {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ password }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -360,19 +359,14 @@ export default function AdminPage() {
       {!token && (
         <section className="bg-card border border-border rounded-xl p-6 space-y-4 text-foreground">
           <h1 className="text-2xl font-semibold">Área do editor</h1>
+          <p className="text-sm text-muted">Digite a senha de administrador para entrar.</p>
           <form onSubmit={handleLogin} className="grid gap-3 max-w-md">
-            <label className="grid gap-1">
-              <span className="text-sm text-muted">Email</span>
-              <input
-                className="bg-card border border-border rounded px-3 py-2 text-foreground"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
             <label className="grid gap-1">
               <span className="text-sm text-muted">Senha</span>
               <input
                 type="password"
+                autoFocus
+                autoComplete="current-password"
                 className="bg-card border border-border rounded px-3 py-2 text-foreground"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

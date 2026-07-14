@@ -16,6 +16,12 @@ def authenticate_user(email: str, password: str) -> bool:
     return email == settings.admin_email and password == settings.admin_password
 
 
+def authenticate_password(password: str) -> bool:
+    """Single-admin auth: only the password matters."""
+    settings = get_settings()
+    return password == settings.admin_password
+
+
 def create_access_token(data: dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     settings = get_settings()
     to_encode = data.copy()

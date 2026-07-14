@@ -81,52 +81,57 @@ Frontend em `http://localhost:3003`, backend em `http://localhost:8000`.
 
 ## Deploy na VPS (Ubuntu + Docker)
 
-Arquivos de produção adicionados:
+Produção usa **um único container** (`Dockerfile` na raiz) com backend + frontend.
 
-- `docker-compose.prod.yml`
-- `.env.production.example`
-- `frontend/Dockerfile.prod`
+Desenvolvimento local com dois containers: `docker compose -f docker-compose.dev.yml up --build`
 
 ### 1) Na VPS, preparar projeto
 
 ```bash
 cd /opt/nerteus
-git clone <URL_DO_SEU_REPO> .  # use git pull se já existe
-cp .env.production.example .env.production
+git clone https://github.com/korgloriws/Nerteus.git .  # ou git pull
 mkdir -p data
 ```
 
-Edite `.env.production` e troque, no mínimo:
+Crie/edite `.env`:
 
-- `SECRET_KEY`
-- `ADMIN_PASSWORD`
-- `ALLOWED_ORIGINS`
-- `NEXT_PUBLIC_API_URL`
+```bash
+cat > .env <<'EOF'
+DATABASE_URL=sqlite:////app/data/app.db
+SECRET_KEY=troque-por-uma-chave-forte
+ADMIN_EMAIL=nerteus@nerteus.com
+ADMIN_PASSWORD=sua-senha-forte
+EOF
+```
 
 ### 2) Subir em produção
 
 ```bash
 cd /opt/nerteus
-docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+docker compose down --remove-orphans
+docker compose up -d --build
 ```
 
 ### 3) Verificar
 
 ```bash
-docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs -f api
-docker compose -f docker-compose.prod.yml logs -f web
+docker compose ps
+docker compose logs --tail=120 nerteus
+curl -I http://localhost:3000
+curl -X POST http://localhost:3000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"nerteus@nerteus.com","password":"sua-senha-forte"}'
 ```
 
-Endpoints esperados:
+Endpoints:
 
-- Frontend: `http://SEU_IP:3003`
-- API health: `http://SEU_IP:8000/health`
+- Site/Admin: `http://SEU_IP:3000`
+- Admin: `http://SEU_IP:3000/admin`
 
 ### 4) Atualizar versão
 
 ```bash
 cd /opt/nerteus
 git pull
-docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+docker compose up -d --build
 ```

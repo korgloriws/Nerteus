@@ -1,38 +1,17 @@
 services:
-  api:
-    build: ./backend
-    container_name: nerteus-api
+  nerteus:
+    build: .
+    container_name: nerteus
     restart: unless-stopped
-    working_dir: /app
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL:-sqlite:///./data/app.db}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/app.db}
       SECRET_KEY: ${SECRET_KEY:-change-me}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      API_URL_INTERNAL: http://127.0.0.1:8000
     volumes:
       - ./data:/app/data
     ports:
-      - "8000:8000"
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
-
-  web:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-    container_name: nerteus-web
-    restart: unless-stopped
-    working_dir: /app
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-      API_URL_INTERNAL: http://host.docker.internal:8000
-    ports:
       - "3000:3003"
-    depends_on:
-      - api
-

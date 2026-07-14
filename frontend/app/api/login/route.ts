@@ -6,23 +6,23 @@ function getApiCandidates(): string[] {
   const configured = process.env.API_URL_INTERNAL?.replace(/\/$/, "");
   const candidates = [
     configured,
-    "http://host.docker.internal:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
     "http://api:8000",
-    "http://nerteus-api:8000",
   ].filter(Boolean) as string[];
 
   return [...new Set(candidates)];
 }
 
-async function forwardAuthToken(body: URLSearchParams) {
+async function forwardLogin(password: string) {
   let lastError = "Não foi possível conectar à API.";
 
   for (const base of getApiCandidates()) {
     try {
-      const res = await fetch(`${base}/auth/token`, {
+      const res = await fetch(`${base}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
       });
       const data = await res.json().catch(() => ({}));
       return NextResponse.json(data, { status: res.status });
@@ -35,23 +35,9 @@ async function forwardAuthToken(body: URLSearchParams) {
 }
 
 export async function POST(req: NextRequest) {
-  const contentType = req.headers.get("content-type") || "";
-
-  if (contentType.includes("application/json")) {
-    const payload = await req.json().catch(() => null);
-    if (!payload?.email || !payload?.password) {
-      return NextResponse.json({ detail: "Email e senha são obrigatórios." }, { status: 400 });
-    }
-    const body = new URLSearchParams();
-    body.append("username", String(payload.email));
-    body.append("password", String(payload.password));
-    return forwardAuthToken(body);
+  const payload = await req.json().catch(() => null);
+  if (!payload?.password) {
+    return NextResponse.json({ detail: "Senha é obrigatória." }, { status: 400 });
   }
-
-  const raw = await req.text();
-  const body = new URLSearchParams(raw);
-  if (!body.get("username") || !body.get("password")) {
-    return NextResponse.json({ detail: "Email e senha são obrigatórios." }, { status: 400 });
-  }
-  return forwardAuthToken(body);
+  return forwardLogin(String(payload.password));
 }
