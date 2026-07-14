@@ -88,6 +88,13 @@ a {
 .accent-science { --accent-color: #dc2626; }
 .accent-default { --accent-color: #6366f1; }
 
+/* Cor por dia da semana */
+.accent-mon { --accent-color: #2563eb; } /* segunda · azul */
+.accent-tue { --accent-color: #eab308; } /* terça · amarelo */
+.accent-wed { --accent-color: #16a34a; } /* quarta · verde */
+.accent-thu { --accent-color: #f97316; } /* quinta · laranja */
+.accent-fri { --accent-color: #dc2626; } /* sexta · vermelho */
+
 /* Forcing content colors on imported HTML */
 .rich-content * {
   color: var(--foreground) !important;

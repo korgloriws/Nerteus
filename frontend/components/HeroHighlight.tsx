@@ -9,10 +9,11 @@ type HeroProps = {
   summary?: string | null;
   hero_image?: string | null;
   tags?: string[];
+  weekday?: string | null;
 };
 
-export function HeroHighlight({ title, slug, summary, hero_image, tags }: HeroProps) {
-  const color = resolveColor(tags);
+export function HeroHighlight({ title, slug, summary, hero_image, tags, weekday }: HeroProps) {
+  const color = resolveColor(tags, weekday);
   return (
     <Link
       href={`/posts/${slug}`}

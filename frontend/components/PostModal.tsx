@@ -11,7 +11,7 @@ type PostModalProps = {
 
 export function PostModal({ post, onClose }: PostModalProps) {
   if (!post) return null;
-  const color = resolveColor(post.tags);
+  const color = resolveColor(post.tags, post.weekday);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-8">
       <div

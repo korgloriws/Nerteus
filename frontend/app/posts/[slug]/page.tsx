@@ -16,6 +16,7 @@ type Post = {
   tags: string[];
   hero_image?: string | null;
   created_at: string;
+  weekday?: string | null;
 };
 
 async function getPost(slug: string): Promise<Post | null> {
@@ -39,7 +40,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   const post = await getPost(params.slug);
   if (!post) return notFound();
   const related = await getRelated(post);
-  const color = resolveColor(post.tags);
+  const color = resolveColor(post.tags, post.weekday);
 
   return (
     <div className={`space-y-10 accent-${color.key}`}>

@@ -12,6 +12,7 @@ type Post = {
   hero_image?: string | null;
   created_at: string;
   views?: number;
+  weekday?: string | null;
 };
 
 async function getPosts(): Promise<Post[]> {

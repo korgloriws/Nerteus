@@ -11,14 +11,15 @@ export type PostTileProps = {
   tags?: string[];
   hero_image?: string | null;
   created_at?: string;
+  weekday?: string | null;
 };
 
 type PostTileExtra = {
   onQuickView?: () => void;
 };
 
-export function PostTile({ slug, title, summary, tags, hero_image, created_at, onQuickView }: PostTileProps & PostTileExtra) {
-  const color = resolveColor(tags);
+export function PostTile({ slug, title, summary, tags, hero_image, created_at, weekday, onQuickView }: PostTileProps & PostTileExtra) {
+  const color = resolveColor(tags, weekday);
   const Card = (
     <div
       className={`group relative h-52 min-w-[260px] max-w-[320px] overflow-hidden rounded-xl bg-card shadow-md transition duration-200 hover:scale-[1.05] hover:-translate-y-1 hover:shadow-2xl accent-${color.key}`}

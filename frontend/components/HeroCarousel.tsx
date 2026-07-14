@@ -32,6 +32,7 @@ export function HeroCarousel({ posts, intervalMs = 8000 }: Props) {
         summary={current.summary}
         hero_image={current.hero_image}
         tags={current.tags}
+        weekday={current.weekday}
       />
     </div>
   );

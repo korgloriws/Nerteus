@@ -15,3 +15,5 @@ declare module "react-quill" {
   export default ReactQuill;
 }
 
+declare module "*.css";
+
