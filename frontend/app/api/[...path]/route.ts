@@ -43,7 +43,17 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
       const resContentType = res.headers.get("content-type");
       if (resContentType) responseHeaders.set("content-type", resContentType);
 
-      return new NextResponse(res.body, {
+      // Status sem corpo (ex.: 204 No Content do DELETE) não podem carregar body.
+      // Passar um stream aqui trava/erra em produção, então respondemos sem corpo.
+      if (res.status === 204 || res.status === 205 || res.status === 304) {
+        return new NextResponse(null, {
+          status: res.status,
+          headers: responseHeaders,
+        });
+      }
+
+      const responseBody = await res.arrayBuffer();
+      return new NextResponse(responseBody, {
         status: res.status,
         statusText: res.statusText,
         headers: responseHeaders,
