@@ -26,7 +26,8 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
   if (authorization) headers.set("authorization", authorization);
 
   let body: ArrayBuffer | undefined;
-  if (req.method !== "GET" && req.method !== "HEAD") {
+  // DELETE/GET/HEAD sem body — enviar ArrayBuffer vazio pode atrapalhar o upstream.
+  if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "DELETE") {
     body = await req.arrayBuffer();
   }
 
@@ -37,29 +38,29 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
         method: req.method,
         headers,
         body,
+        // Evita hang em respostas 204/keep-alive em alguns runtimes.
+        cache: "no-store",
       });
 
+      // Status sem corpo: não repassar stream nem content-type.
+      if (res.status === 204 || res.status === 205 || res.status === 304) {
+        // Consome o body se existir, para liberar a conexão.
+        await res.arrayBuffer().catch(() => null);
+        return new NextResponse(null, { status: res.status });
+      }
+
+      const responseBody = await res.arrayBuffer();
       const responseHeaders = new Headers();
       const resContentType = res.headers.get("content-type");
       if (resContentType) responseHeaders.set("content-type", resContentType);
 
-      // Status sem corpo (ex.: 204 No Content do DELETE) não podem carregar body.
-      // Passar um stream aqui trava/erra em produção, então respondemos sem corpo.
-      if (res.status === 204 || res.status === 205 || res.status === 304) {
-        return new NextResponse(null, {
-          status: res.status,
-          headers: responseHeaders,
-        });
-      }
-
-      const responseBody = await res.arrayBuffer();
       return new NextResponse(responseBody, {
         status: res.status,
         statusText: res.statusText,
         headers: responseHeaders,
       });
     } catch (err: any) {
-      lastError = err?.message || lastError;
+      lastError = `${base}: ${err?.message || lastError}`;
     }
   }
 

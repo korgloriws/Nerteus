@@ -97,7 +97,7 @@ def update_post(
     return post
 
 
-@router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{post_id}")
 def delete_post(
     *,
     session: Session = Depends(get_session),
@@ -109,5 +109,7 @@ def delete_post(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     session.delete(post)
     session.commit()
-    return None
+    # Retorna 200 com corpo (não 204): o proxy Next.js em produção
+    # quebra ao repassar respostas sem body.
+    return {"ok": True, "id": post_id}
 

@@ -315,8 +315,14 @@ export default function AdminPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
-        const detail = await res.text();
-        throw new Error(detail || "Erro ao apagar");
+        let detail = "Erro ao apagar";
+        try {
+          const data = await res.json();
+          detail = data?.detail || JSON.stringify(data);
+        } catch {
+          detail = (await res.text().catch(() => "")) || detail;
+        }
+        throw new Error(`${res.status}: ${detail}`);
       }
       setMessage("Post apagado.");
       // Se remover o último da página, retrocede uma página se necessário
