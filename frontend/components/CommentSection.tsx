@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { getApiUrl } from "../lib/api";
+import { commentLabels, dateLocale, useUiLang } from "../lib/uiLocale";
 
 export type CommentItem = {
   id: number;
@@ -17,6 +18,8 @@ type Props = {
 };
 
 export function CommentSection({ postId }: Props) {
+  const lang = useUiLang();
+  const t = commentLabels(lang);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -32,7 +35,7 @@ export function CommentSection({ postId }: Props) {
       if (!res.ok) return;
       setComments(await res.json());
     } catch {
-      // silencioso: seção continua utilizável
+      // silencioso
     } finally {
       setLoading(false);
     }
@@ -60,60 +63,66 @@ export function CommentSection({ postId }: Props) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const detail = typeof data.detail === "string" ? data.detail : "Não foi possível enviar o comentário.";
+        const detail = typeof data.detail === "string" ? data.detail : t.sendError;
         throw new Error(detail);
       }
       setBody("");
-      if (!isAnonymous) {
-        // mantém nome/e-mail para facilitar comentários seguintes
-      }
-      setMessage("Comentário publicado.");
+      setMessage(t.published);
       setComments((prev) => [data as CommentItem, ...prev]);
     } catch (err: any) {
-      setMessage(err.message || "Erro ao comentar.");
+      setMessage(err.message || t.genericError);
     } finally {
       setSubmitting(false);
     }
   }
 
+  function displayName(c: CommentItem) {
+    if (c.is_anonymous) return t.anonymousName;
+    return c.author_name || t.anonymousName;
+  }
+
   return (
     <section className="space-y-5">
-      <div>
-        <h2 className="text-xl font-semibold">Comentários</h2>
-        <p className="text-sm text-muted">Comente de forma anônima ou se identifique com nome (e-mail opcional).</p>
+      <div className="notranslate" translate="no">
+        <h2 className="text-xl font-semibold">{t.title}</h2>
+        <p className="text-sm text-muted">{t.subtitle}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-card/50 p-4 space-y-3">
+      <form
+        onSubmit={handleSubmit}
+        className="notranslate rounded-2xl border border-border bg-card/50 p-4 space-y-3"
+        translate="no"
+      >
         <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
           <input
             type="checkbox"
             checked={isAnonymous}
             onChange={(e) => setIsAnonymous(e.target.checked)}
           />
-          Comentar como anônimo
+          {t.anonymous}
         </label>
 
         {!isAnonymous && (
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-1">
-              <span className="text-sm text-muted">Nome</span>
+              <span className="text-sm text-muted">{t.name}</span>
               <input
                 className="bg-card border border-border rounded px-3 py-2 text-foreground"
                 value={authorName}
                 onChange={(e) => setAuthorName(e.target.value)}
-                placeholder="Como quer aparecer"
+                placeholder={t.namePlaceholder}
                 required={!isAnonymous}
                 maxLength={80}
               />
             </label>
             <label className="grid gap-1">
-              <span className="text-sm text-muted">E-mail (opcional)</span>
+              <span className="text-sm text-muted">{t.email}</span>
               <input
                 type="email"
                 className="bg-card border border-border rounded px-3 py-2 text-foreground"
                 value={authorEmail}
                 onChange={(e) => setAuthorEmail(e.target.value)}
-                placeholder="nao@aparece.publicamente"
+                placeholder={t.emailPlaceholder}
                 maxLength={120}
               />
             </label>
@@ -121,12 +130,12 @@ export function CommentSection({ postId }: Props) {
         )}
 
         <label className="grid gap-1">
-          <span className="text-sm text-muted">Seu comentário</span>
+          <span className="text-sm text-muted">{t.body}</span>
           <textarea
             className="bg-card border border-border rounded px-3 py-2 text-foreground min-h-[110px]"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Escreva aqui..."
+            placeholder={t.bodyPlaceholder}
             required
             maxLength={2000}
           />
@@ -138,23 +147,31 @@ export function CommentSection({ postId }: Props) {
             disabled={submitting || body.trim().length < 2}
             className="rounded-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 px-4 py-2 text-sm font-semibold text-white"
           >
-            {submitting ? "Enviando..." : "Publicar comentário"}
+            {submitting ? t.submitting : t.submit}
           </button>
           {message && <p className="text-sm text-muted">{message}</p>}
         </div>
       </form>
 
       <div className="space-y-3">
-        {loading && <p className="text-sm text-muted">Carregando comentários...</p>}
+        {loading && (
+          <p className="notranslate text-sm text-muted" translate="no">
+            {t.loading}
+          </p>
+        )}
         {!loading && comments.length === 0 && (
-          <p className="text-sm text-muted">Seja o primeiro a comentar.</p>
+          <p className="notranslate text-sm text-muted" translate="no">
+            {t.empty}
+          </p>
         )}
         {comments.map((c) => (
           <article key={c.id} className="rounded-xl border border-border/70 bg-card/40 p-4 space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-foreground">{c.author_name}</p>
-              <time className="text-[11px] text-muted">
-                {new Date(c.created_at).toLocaleString("pt-BR")}
+              <p className="notranslate text-sm font-semibold text-foreground" translate="no">
+                {displayName(c)}
+              </p>
+              <time className="notranslate text-[11px] text-muted" translate="no">
+                {new Date(c.created_at).toLocaleString(dateLocale(lang))}
               </time>
             </div>
             <p className="text-sm text-foreground/90 whitespace-pre-wrap">{c.body}</p>

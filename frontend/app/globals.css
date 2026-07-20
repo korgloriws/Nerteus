@@ -153,3 +153,28 @@ a {
   color: var(--foreground) !important;
 }
 
+/* Google Translate: esconde banner/widgets padrão; usamos botões próprios */
+#google_translate_element,
+.goog-te-banner-frame,
+.skiptranslate iframe.goog-te-banner-frame {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
+.goog-te-gadget {
+  display: none !important;
+}
+.goog-tooltip,
+.goog-tooltip:hover {
+  display: none !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+font font {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
