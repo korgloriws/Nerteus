@@ -12,6 +12,8 @@ export type PostTileProps = {
   hero_image?: string | null;
   created_at?: string;
   weekday?: string | null;
+  day_theme?: string | null;
+  views?: number;
 };
 
 type PostTileExtra = {

@@ -9,7 +9,7 @@ import type { PostTileProps } from "../components/PostTile";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 type Props = {
-  posts: (PostTileProps & { created_at: string; views?: number })[];
+  posts: (PostTileProps & { created_at: string; views?: number; weekday?: string | null; day_theme?: string | null })[];
 };
 
 const SPECIAL_TITLES: Record<string, string> = {
@@ -18,17 +18,67 @@ const SPECIAL_TITLES: Record<string, string> = {
   banheiro: "Leituras de banheiro",
   "leitura-rapida": "Leitura rápida",
   "leitura-densa": "Leitura densa",
+  tecnologia: "Tecnologia",
+  tech: "Tecnologia",
+  anime: "Animes",
+  animes: "Animes",
+  manga: "Mangá",
+  mangas: "Mangá",
+  mangá: "Mangá",
+  games: "Games",
+  jogos: "Games",
+  otaku: "Otaku",
+  ciencia: "Ciência",
+  ciência: "Ciência",
+  "cultura-pop": "Cultura pop",
+  pop: "Cultura pop",
 };
 
-function humanizeTag(tag: string) {
-  return SPECIAL_TITLES[tag] ?? tag.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+/** Normaliza tags para agrupar variantes (Anime ≈ Animes ≈ anime). */
+function normalizeTagKey(tag: string) {
+  const key = tag
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+
+  const aliases: Record<string, string> = {
+    animes: "anime",
+    mangas: "manga",
+    mangá: "manga",
+    tech: "tecnologia",
+    jogos: "games",
+    games: "games",
+    ciencia: "ciencia",
+    pop: "cultura-pop",
+    "cultura-pop": "cultura-pop",
+  };
+  return aliases[key] || key;
 }
 
-function groupSections(posts: (PostTileProps & { created_at: string; views?: number })[]) {
+function humanizeTag(tag: string) {
+  const key = normalizeTagKey(tag);
+  return (
+    SPECIAL_TITLES[key] ||
+    SPECIAL_TITLES[tag.toLowerCase()] ||
+    tag.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
+}
+
+const WEEKDAY_SECTION: Record<string, string> = {
+  mon: "Segunda · Tech",
+  tue: "Terça · Otaku",
+  wed: "Quarta · Games",
+  thu: "Quinta · Pop",
+  fri: "Sexta · Básica",
+};
+
+function groupSections(posts: (PostTileProps & { created_at: string; views?: number; weekday?: string | null; day_theme?: string | null })[]) {
   const sorted = [...posts].sort((a, b) => {
     const av = a.views ?? 0;
     const bv = b.views ?? 0;
-    if (av !== bv) return bv - av; // mais vistos primeiro
+    if (av !== bv) return bv - av;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
   const hero = sorted.slice(0, 5);
@@ -38,36 +88,56 @@ function groupSections(posts: (PostTileProps & { created_at: string; views?: num
   const monthTop = sorted.filter((p) => new Date(p.created_at).getTime() >= last30);
   const top10Month = (monthTop.length ? monthTop : sorted).slice(0, 10);
   const topTrending = sorted.slice(0, 15);
+  const mostViewed = [...sorted].filter((p) => (p.views ?? 0) > 0).slice(0, 10);
 
-  const buckets: Record<string, (PostTileProps & { created_at: string })[]> = {};
+  const tagBuckets: Record<string, { label: string; posts: typeof sorted }> = {};
   for (const post of sorted) {
     (post.tags || []).forEach((tag) => {
-      if (!buckets[tag]) buckets[tag] = [];
-      buckets[tag].push(post);
+      const key = normalizeTagKey(tag);
+      if (!key) return;
+      if (!tagBuckets[key]) tagBuckets[key] = { label: humanizeTag(tag), posts: [] };
+      // evita duplicar o mesmo post na mesma seção
+      if (!tagBuckets[key].posts.some((p) => p.id === post.id)) {
+        tagBuckets[key].posts.push(post);
+      }
     });
   }
 
-  const sections: { title: string; posts: (PostTileProps & { created_at: string; views?: number })[] }[] = [
-    { title: "Em alta agora", posts: topTrending },
-    { title: "Top 10 do mês", posts: top10Month },
-    { title: "Em destaque", posts: sorted.slice(0, 20) },
-  ];
+  const weekdayBuckets: Record<string, typeof sorted> = {};
+  for (const post of sorted) {
+    const day = (post.weekday || "").toLowerCase();
+    if (!day || !WEEKDAY_SECTION[day]) continue;
+    if (!weekdayBuckets[day]) weekdayBuckets[day] = [];
+    weekdayBuckets[day].push(post);
+  }
 
-  const tagScores = Object.entries(buckets)
-    .map(([tag, list]) => {
-      const newest = Math.max(...list.map((p) => new Date(p.created_at).getTime()));
-      const score = list.length * 1000000 + newest;
-      return { tag, score, count: list.length, posts: list };
-    })
-    .filter((item) => item.count >= 2);
+  const sections: { title: string; posts: typeof sorted }[] = [];
 
-  const ordered = tagScores.sort((a, b) => b.score - a.score);
-  ordered.forEach((item) => {
-    sections.push({
-      title: humanizeTag(item.tag),
-      posts: item.posts.slice(0, 20),
-    });
+  if (topTrending.length) sections.push({ title: "Em alta agora", posts: topTrending });
+  if (mostViewed.length) sections.push({ title: "Mais vistos", posts: mostViewed });
+  if (top10Month.length) sections.push({ title: "Top 10 do mês", posts: top10Month });
+  if (sorted.length) sections.push({ title: "Em destaque", posts: sorted.slice(0, 20) });
+
+  // Seções por dia da semana (quando houver posts)
+  Object.entries(WEEKDAY_SECTION).forEach(([day, title]) => {
+    const list = weekdayBuckets[day];
+    if (list?.length) sections.push({ title, posts: list.slice(0, 20) });
   });
+
+  // Seções por tag: aparece a partir de 1 post (cria o subtema ao publicar)
+  Object.entries(tagBuckets)
+    .map(([key, bucket]) => {
+      const newest = Math.max(...bucket.posts.map((p) => new Date(p.created_at).getTime()));
+      const score = bucket.posts.length * 1_000_000 + newest;
+      return { key, score, ...bucket };
+    })
+    .sort((a, b) => b.score - a.score)
+    .forEach((item) => {
+      sections.push({
+        title: item.label,
+        posts: item.posts.slice(0, 20),
+      });
+    });
 
   if (!sections.length) {
     sections.push({ title: "Novidades", posts: sorted.slice(0, 15) });

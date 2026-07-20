@@ -13,11 +13,14 @@ type Post = {
   created_at: string;
   views?: number;
   weekday?: string | null;
+  day_theme?: string | null;
 };
 
 async function getPosts(): Promise<Post[]> {
   try {
-    const res = await fetch(`${API_URL}/posts`, { next: { revalidate: 30 } });
+    const res = await fetch(`${API_URL}/posts?limit=100&status_filter=published`, {
+      next: { revalidate: 30 },
+    });
     if (!res.ok) {
       return [];
     }
