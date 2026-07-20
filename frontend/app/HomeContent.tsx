@@ -229,6 +229,12 @@ export function HomeContent({ posts }: Props) {
                 </div>
               )}
               <a
+                href="/loja"
+                className="text-sm font-semibold text-foreground bg-card border border-border hover:bg-border/40 rounded-full px-4 py-2"
+              >
+                Loja
+              </a>
+              <a
                 href="/admin"
                 className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-full px-4 py-2 shadow"
               >

@@ -46,7 +46,7 @@ export function PostTile({ slug, title, summary, tags, hero_image, created_at, w
           <h3 className="text-lg font-semibold leading-snug line-clamp-2">{title}</h3>
           {created_at && (
             <span className="text-[10px] uppercase tracking-wide text-muted">
-              {new Date(created_at).toLocaleDateString()}
+              {new Date(created_at).toLocaleDateString("pt-BR")}
             </span>
           )}
         </div>

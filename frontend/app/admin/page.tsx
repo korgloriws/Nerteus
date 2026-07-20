@@ -6,6 +6,7 @@ import type { ReactQuillProps } from "react-quill";
 import React, { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApiUrl } from "../../lib/api";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { AdminProducts } from "../../components/AdminProducts";
 
 const ReactQuill: any = dynamic(() => import("react-quill"), { ssr: false });
 import "react-quill/dist/quill.snow.css";
@@ -88,7 +89,7 @@ export default function AdminPage() {
   const [page, setPage] = useState(0);
   const pageSize = 15;
   const [hasNext, setHasNext] = useState(false);
-  const [view, setView] = useState<"editor" | "lista">("editor");
+  const [view, setView] = useState<"editor" | "lista" | "loja">("editor");
   const [listStatus, setListStatus] = useState<"all" | "published" | "draft">("all");
   const quillRef = useRef<any>(null); // ReactQuill component
   const heroFileRef = useRef<HTMLInputElement | null>(null);
@@ -419,6 +420,15 @@ export default function AdminPage() {
               </button>
               <button
                 type="button"
+                onClick={() => setView("loja")}
+                className={`rounded px-4 py-2 text-sm font-semibold ${
+                  view === "loja" ? "bg-indigo-600 text-white" : "bg-border text-foreground hover:bg-border/80"
+                }`}
+              >
+                Loja
+              </button>
+              <button
+                type="button"
                 onClick={newPost}
                 className="rounded px-4 py-2 text-sm font-semibold bg-border text-foreground hover:bg-border/80"
               >
@@ -705,6 +715,8 @@ export default function AdminPage() {
               </div>
             </section>
           )}
+
+          {view === "loja" && <AdminProducts token={token} />}
         </>
       )}
     </main>
