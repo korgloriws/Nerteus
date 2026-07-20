@@ -20,3 +20,25 @@ class Post(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     updated_at: datetime = Field(default_factory=datetime.utcnow, index=True)
 
+
+class AffiliateProduct(SQLModel, table=True):
+    """Produto afiliado (ex.: Mercado Livre) para a loja."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    affiliate_url: str
+    price: Optional[str] = None
+    size: Optional[str] = None
+    color: Optional[str] = None
+    image: Optional[str] = None
+    description: Optional[str] = None
+    coupon: Optional[str] = None
+    # None = nunca expira; caso contrário some da loja pública após esta data
+    expires_at: Optional[datetime] = Field(default=None, index=True)
+    # Dias usados no formulário (0 = nunca; padrão 30). Recalcula expires_at no save.
+    validity_days: int = Field(default=30)
+    post_id: Optional[int] = Field(default=None, index=True, foreign_key="post.id")
+    status: str = Field(default="active", index=True)  # active | inactive
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
