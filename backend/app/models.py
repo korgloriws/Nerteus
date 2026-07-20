@@ -12,6 +12,8 @@ class Post(SQLModel, table=True):
     summary: Optional[str] = None
     content: str
     tags: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    related_ids: list[int] = Field(default_factory=list, sa_column=Column(JSON))
+    related_product_ids: list[int] = Field(default_factory=list, sa_column=Column(JSON))
     hero_image: Optional[str] = None
     status: str = Field(default="published", index=True)
     weekday: Optional[str] = Field(default=None, index=True)
@@ -41,4 +43,17 @@ class AffiliateProduct(SQLModel, table=True):
     status: str = Field(default="active", index=True)  # active | inactive
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     updated_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class Comment(SQLModel, table=True):
+    """Comentário em uma postagem (anônimo ou identificado)."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    post_id: int = Field(index=True, foreign_key="post.id")
+    body: str
+    is_anonymous: bool = Field(default=False)
+    author_name: Optional[str] = None
+    author_email: Optional[str] = None  # nunca exposto na API pública
+    status: str = Field(default="published", index=True)  # published | hidden
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
 

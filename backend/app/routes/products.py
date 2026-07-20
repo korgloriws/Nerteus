@@ -40,6 +40,8 @@ def list_products(
     *,
     session: Session = Depends(get_session),
     post_id: Optional[int] = Query(None),
+    ids: Optional[str] = Query(None, description="Comma-separated product IDs"),
+    q: Optional[str] = Query(None, description="Search in name or description"),
     status_filter: str = Query("active", description="active | inactive | all"),
     include_expired: bool = Query(False),
     limit: int = Query(40, ge=1, le=100),
@@ -48,11 +50,30 @@ def list_products(
     statement = select(AffiliateProduct)
     if post_id is not None:
         statement = statement.where(AffiliateProduct.post_id == post_id)
+    if q:
+        like_term = f"%{q}%"
+        statement = statement.where(
+            (AffiliateProduct.name.ilike(like_term)) | (AffiliateProduct.description.ilike(like_term))
+        )
+
+    id_list: list[int] = []
+    if ids:
+        for part in ids.split(","):
+            part = part.strip()
+            if part.isdigit():
+                id_list.append(int(part))
+        if id_list:
+            statement = statement.where(AffiliateProduct.id.in_(id_list))
+
     if status_filter != "all":
         statement = statement.where(AffiliateProduct.status == status_filter)
 
     statement = statement.order_by(AffiliateProduct.created_at.desc()).offset(offset).limit(limit)
     rows = session.exec(statement).all()
+
+    if id_list:
+        by_id = {p.id: p for p in rows}
+        rows = [by_id[i] for i in id_list if i in by_id]
 
     if include_expired or status_filter == "all":
         return rows

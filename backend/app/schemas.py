@@ -10,6 +10,8 @@ class PostBase(SQLModel):
     summary: Optional[str] = None
     content: str
     tags: list[str] = Field(default_factory=list)
+    related_ids: list[int] = Field(default_factory=list)
+    related_product_ids: list[int] = Field(default_factory=list)
     hero_image: Optional[str] = None
     status: str = "published"
     weekday: Optional[str] = None
@@ -26,6 +28,8 @@ class PostUpdate(SQLModel):
     summary: Optional[str] = None
     content: Optional[str] = None
     tags: Optional[list[str]] = None
+    related_ids: Optional[list[int]] = None
+    related_product_ids: Optional[list[int]] = None
     hero_image: Optional[str] = None
     status: Optional[str] = None
     weekday: Optional[str] = None
@@ -96,3 +100,20 @@ class AffiliatePreviewResponse(SQLModel):
     affiliate_url: str
     resolved_url: Optional[str] = None
     note: Optional[str] = None
+
+
+class CommentCreate(SQLModel):
+    post_id: int
+    body: str
+    is_anonymous: bool = False
+    author_name: Optional[str] = None
+    author_email: Optional[str] = None
+
+
+class CommentPublic(SQLModel):
+    id: int
+    post_id: int
+    body: str
+    is_anonymous: bool
+    author_name: str  # "Anônimo" ou nome informado (e-mail nunca é exposto)
+    created_at: datetime

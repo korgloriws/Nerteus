@@ -51,6 +51,8 @@ type PostInput = {
   status: "published" | "draft";
   weekday: string;
   day_theme: string;
+  related_ids: number[];
+  related_product_ids: number[];
 };
 
 type PostListItem = {
@@ -62,6 +64,18 @@ type PostListItem = {
   tags: string[];
   hero_image?: string | null;
   status?: "published" | "draft";
+  related_ids?: number[];
+  related_product_ids?: number[];
+  weekday?: string | null;
+  day_theme?: string | null;
+};
+
+type ProductOption = {
+  id: number;
+  name: string;
+  price?: string | null;
+  coupon?: string | null;
+  status?: string;
 };
 
 const emptyPost: PostInput = {
@@ -74,6 +88,8 @@ const emptyPost: PostInput = {
   status: "published",
   weekday: "",
   day_theme: "",
+  related_ids: [],
+  related_product_ids: [],
 };
 
 export default function AdminPage() {
@@ -85,6 +101,10 @@ export default function AdminPage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [posts, setPosts] = useState<PostListItem[]>([]);
+  const [relatedCatalog, setRelatedCatalog] = useState<PostListItem[]>([]);
+  const [productCatalog, setProductCatalog] = useState<ProductOption[]>([]);
+  const [relatedPostFilter, setRelatedPostFilter] = useState("");
+  const [relatedProductFilter, setRelatedProductFilter] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const pageSize = 15;
@@ -167,10 +187,65 @@ export default function AdminPage() {
     }
   }
 
+  async function loadRelatedCatalog() {
+    try {
+      const res = await fetch(`${getApiUrl()}/posts?limit=100&order_by=-created_at&status_filter=all`);
+      if (!res.ok) return;
+      setRelatedCatalog((await res.json()) as PostListItem[]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function loadProductCatalog() {
+    try {
+      const res = await fetch(`${getApiUrl()}/products?status_filter=all&include_expired=true&limit=100`);
+      if (!res.ok) return;
+      setProductCatalog((await res.json()) as ProductOption[]);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   useEffect(() => {
     void loadPosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, listStatus]);
+
+  useEffect(() => {
+    if (token) {
+      void loadRelatedCatalog();
+      void loadProductCatalog();
+    }
+  }, [token]);
+
+  const normalizeFilter = (value: string) =>
+    value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const filteredRelatedPosts = useMemo(() => {
+    const q = normalizeFilter(relatedPostFilter.trim());
+    return relatedCatalog
+      .filter((p) => p.id !== editingId)
+      .filter((p) => {
+        if (!q) return true;
+        const inTitle = normalizeFilter(p.title).includes(q);
+        const inTags = (p.tags || []).some((t) => normalizeFilter(t).includes(q));
+        const inSummary = normalizeFilter(p.summary || "").includes(q);
+        return inTitle || inTags || inSummary;
+      });
+  }, [relatedCatalog, relatedPostFilter, editingId]);
+
+  const filteredRelatedProducts = useMemo(() => {
+    const q = normalizeFilter(relatedProductFilter.trim());
+    return productCatalog.filter((p) => {
+      if (!q) return true;
+      return (
+        normalizeFilter(p.name).includes(q) ||
+        normalizeFilter(p.price || "").includes(q) ||
+        normalizeFilter(p.coupon || "").includes(q)
+      );
+    });
+  }, [productCatalog, relatedProductFilter]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -258,6 +333,8 @@ export default function AdminPage() {
         status: post.status,
         weekday: post.weekday || null,
         day_theme: post.day_theme || null,
+        related_ids: post.related_ids || [],
+        related_product_ids: post.related_product_ids || [],
       };
       const url = editingId ? `${getApiUrl()}/posts/${editingId}` : `${getApiUrl()}/posts`;
       const method = editingId ? "PUT" : "POST";
@@ -279,6 +356,8 @@ export default function AdminPage() {
       setEditingId(null);
       setPage(0);
       void loadPosts(0);
+      void loadRelatedCatalog();
+      void loadProductCatalog();
     } catch (err: any) {
       setMessage(err.message);
     } finally {
@@ -298,9 +377,31 @@ export default function AdminPage() {
       status: (item as any).status ?? "published",
       weekday: (item as any).weekday ?? "",
       day_theme: (item as any).day_theme ?? "",
+      related_ids: item.related_ids || [],
+      related_product_ids: item.related_product_ids || [],
     });
     setDirty(false);
     setMessage(`Editando: ${item.title}`);
+  }
+
+  function toggleRelated(id: number) {
+    setPostAndDirty((prev) => {
+      const exists = prev.related_ids.includes(id);
+      const related_ids = exists
+        ? prev.related_ids.filter((x) => x !== id)
+        : [...prev.related_ids, id].slice(0, 8);
+      return { ...prev, related_ids };
+    });
+  }
+
+  function toggleRelatedProduct(id: number) {
+    setPostAndDirty((prev) => {
+      const exists = prev.related_product_ids.includes(id);
+      const related_product_ids = exists
+        ? prev.related_product_ids.filter((x) => x !== id)
+        : [...prev.related_product_ids, id].slice(0, 8);
+      return { ...prev, related_product_ids };
+    });
   }
 
   async function handleDelete(id: number) {
@@ -570,6 +671,97 @@ export default function AdminPage() {
                       <option value="draft">Rascunho</option>
                     </select>
                   </div>
+                  <div className="grid gap-1">
+                    <span className="text-sm text-muted">Posts relacionados (continue lendo)</span>
+                    <p className="text-[11px] text-muted">
+                      Filtre e selecione até 8. Aparecem logo abaixo do texto.
+                    </p>
+                    <input
+                      className="bg-card border border-border rounded px-3 py-2 text-sm text-foreground"
+                      placeholder="Filtrar por título, tag ou resumo..."
+                      value={relatedPostFilter}
+                      onChange={(e) => setRelatedPostFilter(e.target.value)}
+                    />
+                    <div className="max-h-48 overflow-y-auto rounded border border-border bg-card/40 p-2 space-y-1">
+                      {filteredRelatedPosts.map((p) => {
+                        const checked = post.related_ids.includes(p.id);
+                        return (
+                          <label
+                            key={p.id}
+                            className="flex items-start gap-2 rounded px-2 py-1 text-sm hover:bg-border/40 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              className="mt-1"
+                              checked={checked}
+                              onChange={() => toggleRelated(p.id)}
+                            />
+                            <span className="min-w-0">
+                              <span className="line-clamp-2 text-foreground">{p.title}</span>
+                              {(p.tags || []).length > 0 && (
+                                <span className="block text-[10px] text-muted line-clamp-1">
+                                  {(p.tags || []).slice(0, 4).join(" · ")}
+                                </span>
+                              )}
+                            </span>
+                          </label>
+                        );
+                      })}
+                      {!filteredRelatedPosts.length && (
+                        <p className="text-xs text-muted px-1 py-2">Nenhum post encontrado.</p>
+                      )}
+                    </div>
+                    {post.related_ids.length > 0 && (
+                      <p className="text-[11px] text-muted">{post.related_ids.length} post(s) selecionado(s)</p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-1">
+                    <span className="text-sm text-muted">Produtos relacionados</span>
+                    <p className="text-[11px] text-muted">
+                      Filtre e selecione até 8. Aparecem na postagem após o continue lendo.
+                    </p>
+                    <input
+                      className="bg-card border border-border rounded px-3 py-2 text-sm text-foreground"
+                      placeholder="Filtrar por nome, preço ou cupom..."
+                      value={relatedProductFilter}
+                      onChange={(e) => setRelatedProductFilter(e.target.value)}
+                    />
+                    <div className="max-h-48 overflow-y-auto rounded border border-border bg-card/40 p-2 space-y-1">
+                      {filteredRelatedProducts.map((p) => {
+                        const checked = post.related_product_ids.includes(p.id);
+                        return (
+                          <label
+                            key={p.id}
+                            className="flex items-start gap-2 rounded px-2 py-1 text-sm hover:bg-border/40 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              className="mt-1"
+                              checked={checked}
+                              onChange={() => toggleRelatedProduct(p.id)}
+                            />
+                            <span className="min-w-0">
+                              <span className="line-clamp-2 text-foreground">{p.name}</span>
+                              <span className="block text-[10px] text-muted">
+                                {[p.price, p.coupon ? `Cupom ${p.coupon}` : null].filter(Boolean).join(" · ") ||
+                                  "Sem preço"}
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                      {!filteredRelatedProducts.length && (
+                        <p className="text-xs text-muted px-1 py-2">Nenhum produto encontrado.</p>
+                      )}
+                    </div>
+                    {post.related_product_ids.length > 0 && (
+                      <p className="text-[11px] text-muted">
+                        {post.related_product_ids.length} produto(s) selecionado(s)
+                      </p>
+                    )}
+                  </div>
+
                   <button
                     type="submit"
                     disabled={loading}

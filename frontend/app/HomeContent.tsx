@@ -7,64 +7,11 @@ import { PostModal } from "../components/PostModal";
 import { RowSection } from "../components/RowSection";
 import type { PostTileProps } from "../components/PostTile";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { humanizeTag, normalizeTagKey, preferAccentedLabel } from "../lib/tagLabels";
 
 type Props = {
   posts: (PostTileProps & { created_at: string; views?: number; weekday?: string | null; day_theme?: string | null })[];
 };
-
-const SPECIAL_TITLES: Record<string, string> = {
-  "top-10": "Top 10 mais lidos",
-  chuva: "Para dias chuvosos",
-  banheiro: "Leituras de banheiro",
-  "leitura-rapida": "Leitura rápida",
-  "leitura-densa": "Leitura densa",
-  tecnologia: "Tecnologia",
-  tech: "Tecnologia",
-  anime: "Animes",
-  animes: "Animes",
-  manga: "Mangá",
-  mangas: "Mangá",
-  mangá: "Mangá",
-  games: "Games",
-  jogos: "Games",
-  otaku: "Otaku",
-  ciencia: "Ciência",
-  ciência: "Ciência",
-  "cultura-pop": "Cultura pop",
-  pop: "Cultura pop",
-};
-
-/** Normaliza tags para agrupar variantes (Anime ≈ Animes ≈ anime). */
-function normalizeTagKey(tag: string) {
-  const key = tag
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .replace(/\s+/g, "-");
-
-  const aliases: Record<string, string> = {
-    animes: "anime",
-    mangas: "manga",
-    mangá: "manga",
-    tech: "tecnologia",
-    jogos: "games",
-    games: "games",
-    ciencia: "ciencia",
-    pop: "cultura-pop",
-    "cultura-pop": "cultura-pop",
-  };
-  return aliases[key] || key;
-}
-
-function humanizeTag(tag: string) {
-  const key = normalizeTagKey(tag);
-  return (
-    SPECIAL_TITLES[key] ||
-    SPECIAL_TITLES[tag.toLowerCase()] ||
-    tag.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-  );
-}
 
 const WEEKDAY_SECTION: Record<string, string> = {
   mon: "Segunda · Tech",
@@ -90,12 +37,13 @@ function groupSections(posts: (PostTileProps & { created_at: string; views?: num
   const topTrending = sorted.slice(0, 15);
   const mostViewed = [...sorted].filter((p) => (p.views ?? 0) > 0).slice(0, 10);
 
-  const tagBuckets: Record<string, { label: string; posts: typeof sorted }> = {};
+  const tagBuckets: Record<string, { labels: string[]; posts: typeof sorted }> = {};
   for (const post of sorted) {
     (post.tags || []).forEach((tag) => {
       const key = normalizeTagKey(tag);
       if (!key) return;
-      if (!tagBuckets[key]) tagBuckets[key] = { label: humanizeTag(tag), posts: [] };
+      if (!tagBuckets[key]) tagBuckets[key] = { labels: [], posts: [] };
+      tagBuckets[key].labels.push(tag);
       // evita duplicar o mesmo post na mesma seção
       if (!tagBuckets[key].posts.some((p) => p.id === post.id)) {
         tagBuckets[key].posts.push(post);
@@ -129,7 +77,12 @@ function groupSections(posts: (PostTileProps & { created_at: string; views?: num
     .map(([key, bucket]) => {
       const newest = Math.max(...bucket.posts.map((p) => new Date(p.created_at).getTime()));
       const score = bucket.posts.length * 1_000_000 + newest;
-      return { key, score, ...bucket };
+      return {
+        key,
+        score,
+        label: preferAccentedLabel(bucket.labels) || humanizeTag(key),
+        posts: bucket.posts,
+      };
     })
     .sort((a, b) => b.score - a.score)
     .forEach((item) => {

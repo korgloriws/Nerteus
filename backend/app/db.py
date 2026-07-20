@@ -46,4 +46,8 @@ def ensure_columns():
                 conn.exec_driver_sql("ALTER TABLE post ADD COLUMN day_theme VARCHAR;")
             if "views" not in cols:
                 conn.exec_driver_sql("ALTER TABLE post ADD COLUMN views INTEGER DEFAULT 0;")
+            if "related_ids" not in cols:
+                conn.exec_driver_sql("ALTER TABLE post ADD COLUMN related_ids JSON DEFAULT '[]';")
+            if "related_product_ids" not in cols:
+                conn.exec_driver_sql("ALTER TABLE post ADD COLUMN related_product_ids JSON DEFAULT '[]';")
 

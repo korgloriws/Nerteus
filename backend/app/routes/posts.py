@@ -20,6 +20,7 @@ def list_posts(
     tag: Optional[str] = Query(None, description="Filter by tag"),
     status_filter: str = Query("published", description="published | draft | all"),
     weekday: Optional[str] = Query(None, description="Filter by weekday"),
+    ids: Optional[str] = Query(None, description="Comma-separated post IDs"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     order_by: str = Query("-created_at", description="Use -created_at or created_at"),
@@ -34,6 +35,16 @@ def list_posts(
         statement = statement.where(Post.status == status_filter)
     if weekday:
         statement = statement.where(Post.weekday == weekday)
+
+    id_list: list[int] = []
+    if ids:
+        for part in ids.split(","):
+            part = part.strip()
+            if part.isdigit():
+                id_list.append(int(part))
+        if id_list:
+            statement = statement.where(Post.id.in_(id_list))
+
     if order_by == "-views":
         statement = statement.order_by(Post.views.desc(), Post.created_at.desc())
     elif order_by == "views":
@@ -43,7 +54,14 @@ def list_posts(
     else:
         statement = statement.order_by(Post.created_at.asc())
     statement = statement.offset(offset).limit(limit)
-    return session.exec(statement).all()
+    rows = session.exec(statement).all()
+
+    # Preserva a ordem pedida em ids (útil para "continuar lendo")
+    if id_list:
+        by_id = {p.id: p for p in rows}
+        ordered = [by_id[i] for i in id_list if i in by_id]
+        return ordered
+    return rows
 
 
 @router.get("/{slug}", response_model=PostPublic)
@@ -70,6 +88,10 @@ def create_post(
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Slug already exists")
     post = Post(**payload.dict())
+    if post.related_ids is None:
+        post.related_ids = []
+    if post.related_product_ids is None:
+        post.related_product_ids = []
     session.add(post)
     session.commit()
     session.refresh(post)
@@ -88,6 +110,10 @@ def update_post(
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     update_data = payload.dict(exclude_unset=True)
+    if "related_ids" in update_data and update_data["related_ids"] is None:
+        update_data["related_ids"] = []
+    if "related_product_ids" in update_data and update_data["related_product_ids"] is None:
+        update_data["related_product_ids"] = []
     for key, value in update_data.items():
         setattr(post, key, value)
     post.updated_at = datetime.utcnow()

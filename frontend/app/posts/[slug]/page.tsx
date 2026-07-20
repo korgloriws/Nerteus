@@ -4,6 +4,7 @@ import { API_URL } from "../../../lib/api";
 import { PostTile } from "../../../components/PostTile";
 import { PostToolbar } from "../../../components/PostToolbar";
 import { ProductCard, type AffiliateProduct } from "../../../components/ProductCard";
+import { CommentSection } from "../../../components/CommentSection";
 import { resolveColor } from "../../../lib/themeColor";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,8 @@ type Post = {
   summary?: string | null;
   content: string;
   tags: string[];
+  related_ids?: number[];
+  related_product_ids?: number[];
   hero_image?: string | null;
   created_at: string;
   weekday?: string | null;
@@ -26,7 +29,17 @@ async function getPost(slug: string): Promise<Post | null> {
   return res.json();
 }
 
-async function getRelated(post: Post): Promise<Post[]> {
+async function getRelatedByIds(ids: number[]): Promise<Post[]> {
+  if (!ids.length) return [];
+  const res = await fetch(
+    `${API_URL}/posts?ids=${ids.join(",")}&status_filter=published&limit=${Math.min(ids.length, 100)}`,
+    { next: { revalidate: 60 } }
+  );
+  if (!res.ok) return [];
+  return res.json();
+}
+
+async function getRelatedByTag(post: Post): Promise<Post[]> {
   const mainTag = post.tags?.[0];
   const url = mainTag
     ? `${API_URL}/posts?tag=${encodeURIComponent(mainTag)}&limit=7&status_filter=published`
@@ -37,7 +50,30 @@ async function getRelated(post: Post): Promise<Post[]> {
   return data.filter((p) => p.slug !== post.slug).slice(0, 6);
 }
 
-async function getPostProducts(postId: number): Promise<AffiliateProduct[]> {
+async function getRelated(post: Post): Promise<Post[]> {
+  const manualIds = (post.related_ids || []).filter((id) => id !== post.id);
+  if (manualIds.length) {
+    const manual = await getRelatedByIds(manualIds);
+    if (manual.length) return manual.slice(0, 8);
+  }
+  return getRelatedByTag(post);
+}
+
+async function getProductsByIds(ids: number[]): Promise<AffiliateProduct[]> {
+  if (!ids.length) return [];
+  try {
+    const res = await fetch(
+      `${API_URL}/products?ids=${ids.join(",")}&status_filter=active&limit=${Math.min(ids.length, 100)}`,
+      { next: { revalidate: 60 } }
+    );
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+async function getProductsByPostId(postId: number): Promise<AffiliateProduct[]> {
   try {
     const res = await fetch(
       `${API_URL}/products?post_id=${postId}&status_filter=active&limit=12`,
@@ -50,10 +86,19 @@ async function getPostProducts(postId: number): Promise<AffiliateProduct[]> {
   }
 }
 
+async function getPostProducts(post: Post): Promise<AffiliateProduct[]> {
+  const manualIds = post.related_product_ids || [];
+  if (manualIds.length) {
+    const manual = await getProductsByIds(manualIds);
+    if (manual.length) return manual.slice(0, 8);
+  }
+  return getProductsByPostId(post.id);
+}
+
 export default async function PostPage({ params }: { params: { slug: string } }) {
   const post = await getPost(params.slug);
   if (!post) return notFound();
-  const [related, products] = await Promise.all([getRelated(post), getPostProducts(post.id)]);
+  const [related, products] = await Promise.all([getRelated(post), getPostProducts(post)]);
   const color = resolveColor(post.tags, post.weekday);
 
   return (
@@ -85,6 +130,18 @@ export default async function PostPage({ params }: { params: { slug: string } })
         />
       </article>
 
+      {related.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">Continue lendo</h2>
+          <p className="text-sm text-muted">Próximas leituras selecionadas para você</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((item) => (
+              <PostTile key={item.id} {...item} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {products.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -101,16 +158,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </section>
       )}
 
-      {related.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Relacionados</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((item) => (
-              <PostTile key={item.id} {...item} />
-            ))}
-          </div>
-        </section>
-      )}
+      <CommentSection postId={post.id} />
     </div>
   );
 }
