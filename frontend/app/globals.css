@@ -31,12 +31,103 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--background);
   color: var(--foreground);
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
 a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Tipografia fluida básica */
+.fluid-h1 {
+  font-size: clamp(1.5rem, 1.2rem + 2vw, 2.25rem);
+  line-height: 1.2;
+  word-break: break-word;
+}
+.fluid-h2 {
+  font-size: clamp(1.15rem, 1rem + 1vw, 1.35rem);
+  line-height: 1.3;
+  word-break: break-word;
+}
+.fluid-body {
+  font-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.05rem);
+  line-height: 1.6;
+}
+
+/* Frame de mídia: respeita proporção sem estourar nem cortar demais */
+.media-frame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--border) 55%, transparent);
+}
+.media-frame--cover {
+  aspect-ratio: 16 / 10;
+}
+.media-frame--square {
+  aspect-ratio: 1 / 1;
+}
+.media-frame--hero {
+  aspect-ratio: 16 / 9;
+  min-height: clamp(200px, 52vw, 380px);
+}
+.media-frame img,
+.media-frame .media-img {
+  object-fit: contain;
+  object-position: center;
+}
+.media-frame--crop img,
+.media-frame--crop .media-img {
+  object-fit: cover;
+}
+
+/* HTML rico dos posts: imagens/iframes nunca estourem a tela */
+.rich-content {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.rich-content img,
+.rich-content video,
+.rich-content iframe,
+.rich-content embed,
+.rich-content object {
+  display: block;
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  max-height: min(70vh, 640px);
+  margin-left: auto;
+  margin-right: auto;
+  object-fit: contain;
+  border-radius: 0.75rem;
+}
+.rich-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+}
+.rich-content pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 
 .bg-background { background-color: var(--background); }
 .text-foreground { color: var(--foreground); }

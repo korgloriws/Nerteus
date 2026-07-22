@@ -102,16 +102,16 @@ export default async function PostPage({ params }: { params: { slug: string } })
   const color = resolveColor(post.tags, post.weekday);
 
   return (
-    <div className={`space-y-10 accent-${color.key}`}>
+    <div className={`space-y-8 sm:space-y-10 accent-${color.key} min-w-0`}>
       <PostToolbar />
-      <article className="space-y-6">
+      <article className="space-y-5 sm:space-y-6 min-w-0">
         <Link href="/" className="text-sm text-primary hover:opacity-80">
           ← Voltar
         </Link>
-        <div>
+        <div className="min-w-0">
           <div className="text-sm text-muted mb-1">{new Date(post.created_at).toLocaleDateString("pt-BR")}</div>
-          <h1 className="text-3xl font-bold mb-3 text-foreground">{post.title}</h1>
-          <p className="text-lg text-muted">{post.summary}</p>
+          <h1 className="fluid-h1 font-bold mb-3 text-foreground">{post.title}</h1>
+          <p className="text-base sm:text-lg text-muted break-words">{post.summary}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {post.tags?.map((tag) => (
               <Link
@@ -124,6 +124,12 @@ export default async function PostPage({ params }: { params: { slug: string } })
             ))}
           </div>
         </div>
+        {post.hero_image ? (
+          <div className="media-frame media-frame--hero rounded-2xl border border-border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={post.hero_image} alt={post.title} className="media-img absolute inset-0 h-full w-full" />
+          </div>
+        ) : null}
         <div
           className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground prose-a:text-primary dark:prose-invert rich-content"
           dangerouslySetInnerHTML={{ __html: post.content }}
@@ -131,10 +137,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
       </article>
 
       {related.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Continue lendo</h2>
+        <section className="space-y-4 min-w-0">
+          <h2 className="fluid-h2 font-semibold">Continue lendo</h2>
           <p className="text-sm text-muted">Próximas leituras selecionadas para você</p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (
               <PostTile key={item.id} {...item} />
             ))}
@@ -143,14 +149,14 @@ export default async function PostPage({ params }: { params: { slug: string } })
       )}
 
       {products.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Produtos relacionados</h2>
-            <Link href="/loja" className="text-sm text-primary hover:opacity-80">
+        <section className="space-y-4 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="fluid-h2 font-semibold">Produtos relacionados</h2>
+            <Link href="/loja" className="text-sm text-primary hover:opacity-80 whitespace-nowrap">
               Ver loja →
             </Link>
           </div>
-          <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid items-start gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

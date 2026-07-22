@@ -15,7 +15,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="pt-BR">
       <body className="bg-background text-foreground min-h-screen transition-colors">
         <ThemeProviderClient>
-          <div className="max-w-6xl mx-auto px-4 py-8">{children}</div>
+          <div className="app-shell max-w-6xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-8 overflow-x-hidden">
+            {children}
+          </div>
         </ThemeProviderClient>
       </body>
     </html>

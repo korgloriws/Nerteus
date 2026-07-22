@@ -29,18 +29,18 @@ export default async function TagPage({ params }: TagParams) {
   const label = humanizeTag(tag);
 
   return (
-    <main className="space-y-6 text-foreground">
-      <div className="flex items-center justify-between">
-        <div>
+    <main className="space-y-6 text-foreground min-w-0">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.3em] text-muted">Tag</p>
-          <h1 className="text-3xl font-bold">{label}</h1>
+          <h1 className="fluid-h1 font-bold break-words">{label}</h1>
           <p className="text-sm text-muted">Posts com a tag “{label}”</p>
         </div>
-        <Link href="/" className="text-sm text-primary hover:opacity-80">
+        <Link href="/" className="text-sm text-primary hover:opacity-80 whitespace-nowrap pt-1">
           ← Voltar
         </Link>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {posts.map((p) => (
           <PostTile key={p.id} {...p} />
         ))}

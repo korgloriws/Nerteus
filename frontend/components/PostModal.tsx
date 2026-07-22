@@ -13,18 +13,18 @@ export function PostModal({ post, onClose }: PostModalProps) {
   if (!post) return null;
   const color = resolveColor(post.tags, post.weekday);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-3 sm:px-4 py-6 sm:py-8 overflow-y-auto">
       <div
-        className={`relative max-w-4xl w-full overflow-hidden rounded-3xl border border-border/25 bg-card/60 shadow-2xl animate-float-in accent-surface accent-${color.key}`}
+        className={`relative max-w-4xl w-full my-auto overflow-hidden rounded-2xl sm:rounded-3xl border border-border/25 bg-card/60 shadow-2xl animate-float-in accent-surface accent-${color.key}`}
       >
         <div className="grid md:grid-cols-[1.2fr_1fr] items-stretch">
-          <div className="relative h-64 md:h-full">
+          <div className="relative media-frame media-frame--cover media-frame--crop md:min-h-full md:aspect-auto md:h-full md:max-h-none">
             {post.hero_image ? (
               <Image
                 src={post.hero_image}
                 alt={post.title}
                 fill
-                className="object-cover transition duration-300 group-hover:scale-105"
+                className="media-img"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 unoptimized
               />
@@ -33,10 +33,10 @@ export function PostModal({ post, onClose }: PostModalProps) {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
           </div>
-          <div className="p-8 space-y-4 backdrop-blur-sm bg-card/70">
+          <div className="p-4 sm:p-8 space-y-4 backdrop-blur-sm bg-card/70 min-w-0">
             <p className="text-[11px] uppercase tracking-[0.3em] text-muted">Prévia</p>
-            <h3 className="text-2xl font-bold text-foreground leading-tight">{post.title}</h3>
-            <p className="text-sm text-muted">{post.summary || "Sem resumo disponível."}</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground leading-tight break-words">{post.title}</h3>
+            <p className="text-sm text-muted break-words">{post.summary || "Sem resumo disponível."}</p>
             <div className="flex flex-wrap gap-2">
               {post.tags?.map((tag) => (
                 <span

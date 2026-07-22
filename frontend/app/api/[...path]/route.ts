@@ -88,3 +88,4 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
 export async function PATCH(req: NextRequest, { params }: RouteContext) {
   return proxy(req, params.path);
 }
+

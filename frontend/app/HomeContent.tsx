@@ -152,18 +152,18 @@ export function HomeContent({ posts }: Props) {
 
   return (
     <>
-      <main className="space-y-10 text-foreground">
+      <main className="space-y-8 sm:space-y-10 text-foreground min-w-0">
         <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="text-xs uppercase tracking-[0.3em] text-muted">Streaming de posts</p>
-              <h1 className="text-3xl md:text-4xl font-bold">Nerteus</h1>
+              <h1 className="fluid-h1 font-bold">Nerteus</h1>
               <p className="text-sm text-muted">Curadoria dinâmica da cultura nerd</p>
             </div>
-            <div className="flex items-center gap-3 relative">
+            <div className="flex items-center gap-2 sm:gap-3 relative flex-wrap justify-start sm:justify-end">
               <div
                 className={`flex items-center gap-2 bg-card border border-border rounded-full px-3 py-1 transition-all duration-200 ${
-                  searchOpen ? "w-64 md:w-80" : "w-10 justify-center"
+                  searchOpen ? "w-full sm:w-64 md:w-80" : "w-10 justify-center"
                 }`}
               >
                 <button
@@ -193,7 +193,7 @@ export function HomeContent({ posts }: Props) {
                 )}
               </div>
               {searchOpen && query.trim().length >= 2 && (
-                <div className="absolute right-0 top-12 w-[500px] max-h-[420px] overflow-y-auto bg-card border border-border rounded-2xl shadow-xl z-20">
+                <div className="absolute left-0 right-0 sm:left-auto sm:right-0 top-12 w-full sm:w-[min(500px,90vw)] max-h-[min(420px,60vh)] overflow-y-auto bg-card border border-border rounded-2xl shadow-xl z-20">
                   {searchLoading && (
                     <div className="space-y-2 p-3">
                       {Array.from({ length: 4 }).map((_, idx) => (
