@@ -1,0 +1,17 @@
+services:
+  nerteus:
+    build: .
+    container_name: nerteus
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/app.db}
+      SECRET_KEY: ${SECRET_KEY:-change-me}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      API_URL_INTERNAL: http://127.0.0.1:8000
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "3000:3003"
