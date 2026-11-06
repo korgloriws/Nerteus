@@ -1,12 +1,25 @@
 import Link from "next/link";
+import { Archivo } from "next/font/google";
+
+const wordmarkFont = Archivo({
+  subsets: ["latin"],
+  display: "swap",
+});
 
 type Props = {
   as?: "h1" | "span";
+  compact?: boolean;
 };
 
-export function BrandLogo({ as = "span" }: Props) {
+export function BrandLogo({ as = "span", compact = false }: Props) {
   const wordmark = (
-    <span className="fluid-h1 font-bold leading-none text-foreground">Nerteus</span>
+    <span
+      className={`${wordmarkFont.className} nf-wordmark ${
+        compact ? "text-[1.65rem] sm:text-[1.9rem]" : "text-[2rem] sm:text-[2.35rem]"
+      }`}
+    >
+      Nerteus
+    </span>
   );
 
   const link = (

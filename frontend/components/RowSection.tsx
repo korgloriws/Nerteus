@@ -10,18 +10,20 @@ type RowSectionProps = {
   emptyHint?: string;
   onQuickView?: (post: PostTileProps) => void;
   loadingSkeletonCount?: number;
+  numbered?: boolean;
 };
+
+const tileWidth = "w-[46vw] max-w-[280px] shrink-0 sm:w-[240px] sm:max-w-none lg:w-[280px]";
 
 function SkeletonTile() {
   return (
-    <div className="w-[42vw] max-w-[240px] shrink-0 sm:w-[220px]">
-      <div className="aspect-video animate-pulse rounded-[4px] bg-white/10" />
-      <div className="mt-2 h-3 w-3/4 animate-pulse rounded bg-white/10" />
+    <div className={tileWidth}>
+      <div className="aspect-[2/1] animate-pulse rounded-[4px] bg-white/10" />
     </div>
   );
 }
 
-export function RowSection({ title, posts, emptyHint, onQuickView, loadingSkeletonCount = 0 }: RowSectionProps) {
+export function RowSection({ title, posts, emptyHint, onQuickView, loadingSkeletonCount = 0, numbered = false }: RowSectionProps) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
@@ -57,15 +59,15 @@ export function RowSection({ title, posts, emptyHint, onQuickView, loadingSkelet
   }
 
   return (
-    <section className="group/row relative min-w-0 space-y-2">
-      <h2 className="px-1 text-lg font-semibold text-foreground sm:text-xl">{title}</h2>
-      <div className="relative">
+    <section className="nf-row group/row relative min-w-0">
+      <h2 className="px-4 text-base font-bold tracking-tight text-foreground sm:px-8 sm:text-lg lg:px-12">{title}</h2>
+      <div className="relative mt-1.5 sm:mt-2">
         {canLeft ? (
           <button
             type="button"
             aria-label="Anterior"
             onClick={() => scrollByDir(-1)}
-            className="absolute left-0 top-0 z-20 hidden h-[calc(100%-1.75rem)] w-10 items-center justify-center bg-black/50 text-white opacity-0 transition hover:bg-black/70 group-hover/row:opacity-100 md:flex"
+            className="absolute bottom-2 left-0 top-2 z-20 hidden w-10 items-center justify-center bg-gradient-to-r from-black/70 to-transparent text-white opacity-0 transition hover:from-black/80 group-hover/row:opacity-100 md:flex"
           >
             <ChevronLeftIcon className="h-8 w-8" />
           </button>
@@ -75,22 +77,33 @@ export function RowSection({ title, posts, emptyHint, onQuickView, loadingSkelet
             type="button"
             aria-label="Próximo"
             onClick={() => scrollByDir(1)}
-            className="absolute right-0 top-0 z-20 hidden h-[calc(100%-1.75rem)] w-10 items-center justify-center bg-black/50 text-white opacity-0 transition hover:bg-black/70 group-hover/row:opacity-100 md:flex"
+            className="absolute bottom-2 right-0 top-2 z-20 hidden w-10 items-center justify-center bg-gradient-to-l from-black/70 to-transparent text-white opacity-0 transition hover:from-black/80 group-hover/row:opacity-100 md:flex"
           >
             <ChevronRightIcon className="h-8 w-8" />
           </button>
         ) : null}
         <div
           ref={scrollerRef}
-          className="nf-scroller -mx-3 flex gap-2 overflow-x-auto overscroll-x-contain px-3 py-3 sm:mx-0 sm:px-0"
+          className="nf-scroller flex gap-2 overflow-x-auto overscroll-x-contain px-4 py-2 sm:gap-2 sm:px-8 lg:px-12"
         >
           {showSkeletons
             ? Array.from({ length: loadingSkeletonCount }).map((_, idx) => <SkeletonTile key={idx} />)
-            : posts.map((post) => (
-                <div key={post.id} className="w-[42vw] max-w-[240px] shrink-0 sm:w-[220px]">
-                  <PostTile {...post} onQuickView={onQuickView ? () => onQuickView(post) : undefined} />
-                </div>
-              ))}
+            : posts.map((post, index) =>
+                numbered ? (
+                  <div key={post.id} className="nf-rank-item">
+                    <span className="nf-rank" aria-hidden>
+                      {index + 1}
+                    </span>
+                    <div className="nf-rank-poster">
+                      <PostTile {...post} onQuickView={onQuickView ? () => onQuickView(post) : undefined} />
+                    </div>
+                  </div>
+                ) : (
+                  <div key={post.id} className={tileWidth}>
+                    <PostTile {...post} onQuickView={onQuickView ? () => onQuickView(post) : undefined} />
+                  </div>
+                )
+              )}
         </div>
       </div>
       {posts.length === 0 && emptyHint ? <p className="text-sm text-muted">{emptyHint}</p> : null}

@@ -19,6 +19,13 @@ from ..schemas import (
 router = APIRouter(prefix="/products", tags=["products"])
 
 
+def _as_utc(value: datetime) -> datetime:
+    """SQLite devolve datas sem fuso; o restante do código usa UTC."""
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 def _compute_expires_at(validity_days: int, from_dt: Optional[datetime] = None) -> Optional[datetime]:
     """0 ou negativo = nunca expira; >0 = from_dt + dias."""
     if validity_days is None or validity_days <= 0:
@@ -32,7 +39,8 @@ def _is_visible(product: AffiliateProduct, now: Optional[datetime] = None) -> bo
         return False
     if product.expires_at is None:
         return True
-    return product.expires_at > (now or datetime.now(timezone.utc))
+    current = _as_utc(now or datetime.now(timezone.utc))
+    return _as_utc(product.expires_at) > current
 
 
 @router.get("", response_model=list[AffiliateProductPublic])

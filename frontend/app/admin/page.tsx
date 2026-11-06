@@ -6,6 +6,7 @@ import type { ReactQuillProps } from "react-quill";
 import React, { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApiUrl } from "../../lib/api";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { BackButton } from "../../components/BackButton";
 import { AdminProducts } from "../../components/AdminProducts";
 import { stripHeroFromContent } from "../../lib/stripHeroFromContent";
 import { slugify } from "../../lib/slugify";
@@ -555,6 +556,7 @@ export default function AdminPage() {
 
   return (
     <main className="space-y-8 admin-surface">
+      <BackButton label="Voltar ao início" />
       {!token && (
         <section className="bg-card border border-border rounded-xl p-6 space-y-4 text-foreground">
           <h1 className="text-2xl font-semibold">Área do editor</h1>
@@ -785,7 +787,7 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div className="grid gap-1">
-                    <span className="text-sm text-muted">Posts relacionados (continue lendo)</span>
+                    <span className="text-sm text-muted">Posts relacionados (próximas leituras)</span>
                     <p className="text-[11px] text-muted">
                       Filtre e selecione até 8. Aparecem logo abaixo do texto.
                     </p>
@@ -832,7 +834,7 @@ export default function AdminPage() {
                   <div className="grid gap-1">
                     <span className="text-sm text-muted">Produtos relacionados</span>
                     <p className="text-[11px] text-muted">
-                      Filtre e selecione até 8. Aparecem na postagem após o continue lendo.
+                      Filtre e selecione até 8. Aparecem na postagem após as próximas leituras.
                     </p>
                     <input
                       className="bg-card border border-border rounded px-3 py-2 text-sm text-foreground"

@@ -14,7 +14,7 @@ type TagParams = {
 async function getByTag(tag: string): Promise<PostTileProps[]> {
   const res = await fetch(
     `${API_URL}/posts?tag=${encodeURIComponent(tag)}&status_filter=published&order_by=-views&limit=60`,
-    { next: { revalidate: 60 } }
+    { cache: "no-store" }
   );
   if (!res.ok) return [];
   return res.json();

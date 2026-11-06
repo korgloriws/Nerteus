@@ -7,6 +7,7 @@ from urllib.parse import unquote
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import Response
+from sqlalchemy import text
 from sqlmodel import Session, select
 
 from ..auth import get_current_editor
@@ -78,7 +79,13 @@ def list_posts(
         like_term = f"%{q}%"
         statement = statement.where((Post.title.ilike(like_term)) | (Post.summary.ilike(like_term)))
     if tag:
-        statement = statement.where(Post.tags.contains([tag]))
+        # contains(["tag"]) vira um LIKE do array inteiro e só acha posts
+        # cuja lista é exatamente essa tag. json_each confere se a tag está na lista.
+        statement = statement.where(
+            text(
+                "EXISTS (SELECT 1 FROM json_each(post.tags) WHERE json_each.value = :tag_value)"
+            ).bindparams(tag_value=tag)
+        )
     if status_filter != "all":
         statement = statement.where(Post.status == status_filter)
     if weekday:

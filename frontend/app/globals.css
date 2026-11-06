@@ -55,6 +55,19 @@ a {
   text-decoration: none;
 }
 
+/* Wordmark: grotesca pesada, tracking fechado, branca no fundo escuro. */
+.nf-wordmark {
+  display: inline-block;
+  color: #ffffff;
+  font-weight: 850;
+  font-stretch: 88%;
+  letter-spacing: -0.03em;
+  line-height: 0.85;
+}
+.light .nf-wordmark {
+  color: #141414;
+}
+
 /* Tipografia fluida básica */
 .fluid-h1 {
   font-size: clamp(1.5rem, 1.2rem + 2vw, 2.25rem);
@@ -160,13 +173,139 @@ a {
 .hero-overlay { background: linear-gradient(90deg, var(--overlay-strong) 0%, var(--overlay-soft) 45%, transparent 100%); }
 .hero-overlay-light { background: linear-gradient(90deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.35) 42%, transparent 72%); }
 
+.nf-hero-fade {
+  background: linear-gradient(to top, var(--background), transparent);
+}
+
+@keyframes nf-billboard-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.nf-hero-swap {
+  animation: nf-billboard-in 0.6s cubic-bezier(0, 0, 0.2, 1);
+}
+
 /* Faixas estilo Netflix: esconde scrollbar, deixa o hover crescer um pouco */
 .nf-scroller {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
 }
 .nf-scroller::-webkit-scrollbar {
   display: none;
+}
+
+.nf-card-media img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+/* Celular: o card encolhe e a imagem acompanha, na mesma proporção */
+@media (max-width: 639px) {
+  .nf-scroller {
+    scroll-snap-type: x proximity;
+    scroll-padding-left: 1rem;
+  }
+  .nf-scroller > * {
+    scroll-snap-align: start;
+  }
+  .nf-row .group\/tile:active .nf-card {
+    transform: scale(0.96);
+  }
+}
+.nf-rank-item {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  width: 46vw;
+  max-width: 210px;
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+.nf-rank-item:hover {
+  z-index: 3;
+}
+.nf-rank {
+  position: relative;
+  z-index: 0;
+  margin-right: -0.7rem;
+  font-size: 4.15rem;
+  font-weight: 800;
+  line-height: 0.75;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.92);
+  -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 58%, transparent 100%);
+  user-select: none;
+  pointer-events: none;
+}
+.nf-rank-poster {
+  position: relative;
+  z-index: 1;
+  width: 30vw;
+  max-width: 132px;
+  flex-shrink: 0;
+}
+.nf-rank-poster .nf-card-media h3 {
+  padding-left: 0.7rem;
+}
+.nf-rank-poster .nf-card-media::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1.35rem;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--background) 0%, transparent 100%);
+}
+@media (min-width: 640px) {
+  .nf-rank-item {
+    width: auto;
+    max-width: none;
+  }
+  .nf-rank {
+    margin-right: -1.5rem;
+    font-size: 7.5rem;
+    -webkit-text-stroke-width: 3px;
+  }
+  .nf-rank-poster {
+    width: 240px;
+    max-width: none;
+  }
+  .nf-rank-poster .nf-card-media h3 {
+    padding-left: 1.15rem;
+  }
+  .nf-rank-poster .nf-card-media::after {
+    width: 2.4rem;
+  }
+}
+@media (min-width: 1024px) {
+  .nf-rank {
+    margin-right: -1.7rem;
+    font-size: 8.25rem;
+  }
+  .nf-rank-poster {
+    width: 260px;
+  }
+  .nf-rank-poster .nf-card-media::after {
+    width: 2.7rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nf-hero-swap {
+    animation: none;
+  }
+  .nf-scroller {
+    scroll-snap-type: none;
+  }
+  .nf-row .group\/tile:active .nf-card {
+    transform: none;
+  }
 }
 .modal-overlay { background: linear-gradient(180deg, var(--overlay-strong) 0%, var(--overlay-soft) 50%, transparent 100%); }
 
@@ -297,5 +436,36 @@ body {
 font font {
   background: transparent !important;
   box-shadow: none !important;
+}
+
+/* Livro que abre no hover — substitui o botão de play */
+.open-book {
+  overflow: visible;
+  perspective: 160px;
+}
+.open-book__page {
+  transform-box: fill-box;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.open-book__page--left {
+  transform-origin: right center;
+  transform: rotateY(-34deg);
+}
+.open-book__page--right {
+  transform-origin: left center;
+  transform: rotateY(34deg);
+}
+.group:hover .open-book__page--left,
+.group\/tile:hover .open-book__page--left {
+  transform: rotateY(-68deg);
+}
+.group:hover .open-book__page--right,
+.group\/tile:hover .open-book__page--right {
+  transform: rotateY(68deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .open-book__page {
+    transition: none;
+  }
 }
 

@@ -3,11 +3,13 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { API_URL } from "../../../lib/api";
 import { PostTile } from "../../../components/PostTile";
-import { PostToolbar } from "../../../components/PostToolbar";
 import { ProductCard, type AffiliateProduct } from "../../../components/ProductCard";
 import { CommentSection } from "../../../components/CommentSection";
 import { resolveColor } from "../../../lib/themeColor";
 import { stripHeroFromContent } from "../../../lib/stripHeroFromContent";
+import { ReadingProgressTracker } from "../../../components/ReadingProgressTracker";
+import { BackButton } from "../../../components/BackButton";
+import { PostTasteBar } from "../../../components/PostTasteBar";
 
 export const dynamic = "force-dynamic";
 
@@ -172,12 +174,16 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   return (
     <div className={`space-y-8 sm:space-y-10 accent-${color.key} min-w-0`}>
-      <PostToolbar />
-      <article className="space-y-5 sm:space-y-6 min-w-0">
+      <ReadingProgressTracker postId={post.id} slug={post.slug} />
+      <article data-reading-root className="space-y-5 sm:space-y-6 min-w-0">
+        <BackButton label="Voltar" />
         <div className="min-w-0">
           <div className="text-sm text-muted mb-1">{new Date(post.created_at).toLocaleDateString("pt-BR")}</div>
           <h1 className="fluid-h1 font-bold mb-3 text-foreground">{post.title}</h1>
           <p className="text-base sm:text-lg text-muted break-words">{post.summary}</p>
+          <div className="mt-4">
+            <PostTasteBar postId={post.id} slug={post.slug} />
+          </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {post.tags?.map((tag) => (
               <Link
@@ -198,8 +204,8 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
       {related.length > 0 && (
         <section className="space-y-4 min-w-0">
-          <h2 className="fluid-h2 font-semibold">Continue lendo</h2>
-          <p className="text-sm text-muted">Próximas leituras selecionadas para você</p>
+          <h2 className="fluid-h2 font-semibold">Próximas leituras</h2>
+          <p className="text-sm text-muted">Sugestões escolhidas para seguir a partir daqui</p>
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (
               <PostTile key={item.id} {...item} />
