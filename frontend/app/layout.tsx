@@ -6,6 +6,11 @@ import { PageFrame } from "../components/PageFrame";
 import { SiteNav } from "../components/SiteNav";
 import { PwaRegister } from "../components/PwaRegister";
 import { PwaSplash } from "../components/PwaSplash";
+import { SiteFooter } from "../components/SiteFooter";
+import { FooterGate } from "../components/FooterGate";
+import { ConsentBanner } from "../components/ConsentBanner";
+import { Analytics } from "../components/Analytics";
+import { AdSenseLoader } from "../components/AdSenseLoader";
 
 export const dynamic = "force-dynamic";
 
@@ -69,8 +74,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProviderClient>
           <PwaSplash />
           <PwaRegister />
+          <Analytics />
+          <AdSenseLoader />
           <SiteNav />
           <PageFrame>{children}</PageFrame>
+          <FooterGate>
+            <SiteFooter />
+          </FooterGate>
+          <ConsentBanner />
         </ThemeProviderClient>
       </body>
     </html>

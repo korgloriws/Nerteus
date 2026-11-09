@@ -17,6 +17,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import { getApiUrl } from "../lib/api";
 import { WEEKDAYS } from "../lib/weekdays";
+import { LEGAL_LINKS } from "../lib/monetization";
 
 type SearchPost = {
   id: number;
@@ -164,6 +165,12 @@ export function SiteNav() {
               <LanguageSwitcher />
               {onPost && <ThemeToggle />}
               <Link
+                href="/sobre"
+                className="rounded-full px-3 py-1.5 text-sm font-semibold text-muted hover:bg-card/70 hover:text-foreground"
+              >
+                Sobre
+              </Link>
+              <Link
                 href="/admin"
                 className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
                   onAdmin ? "bg-indigo-600 text-white" : "bg-indigo-600/90 text-white hover:bg-indigo-500"
@@ -225,9 +232,23 @@ export function SiteNav() {
         )}
         {settingsOpen && (
           <div className="border-t border-border bg-background px-3 py-3 md:hidden">
-            <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
-              <LanguageSwitcher />
-              {onPost && <ThemeToggle />}
+            <div className="mx-auto flex max-w-6xl flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <LanguageSwitcher />
+                {onPost && <ThemeToggle />}
+              </div>
+              <div className="flex flex-wrap gap-2" aria-label="Informações do site">
+                {LEGAL_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setSettingsOpen(false)}
+                    className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted hover:text-foreground"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         )}

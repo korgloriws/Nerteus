@@ -13,6 +13,7 @@ import { ReadingProgressTracker } from "./ReadingProgressTracker";
 import { PostTile, type PostTileProps } from "./PostTile";
 import { ProductCard, type AffiliateProduct } from "./ProductCard";
 import { CommentSection } from "./CommentSection";
+import { AdSlot } from "./AdSlot";
 import { classifyProgress, getReadingEntry } from "../lib/readingProgress";
 import { resolveColor } from "../lib/themeColor";
 
@@ -123,6 +124,11 @@ export function PostExperience({ post, bodyHtml, related, products, initialReadi
         )}
 
         <div className="mx-auto w-full max-w-6xl space-y-6 px-3 sm:px-4">
+          <AdSlot
+            slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_INARTICLE}
+            format="horizontal"
+            label="Publicidade"
+          />
           <PostShareBar title={post.title} summary={post.summary} slug={post.slug} />
           <CommentSection postId={post.id} />
         </div>

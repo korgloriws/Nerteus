@@ -7,7 +7,9 @@ type PostCard = {
   created_at: string;
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://31.97.167.75:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nerteus.com";
+
+const LEGAL_PATHS = ["/sobre", "/contato", "/privacidade", "/cookies", "/termos", "/etica", "/loja"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const apiUrl = getApiUrl();
@@ -18,12 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 1,
     },
-    {
-      url: `${siteUrl}/loja`,
+    ...LEGAL_PATHS.map((path) => ({
+      url: `${siteUrl}${path}`,
       lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.8,
-    },
+      changeFrequency: "monthly" as const,
+      priority: path === "/loja" ? 0.8 : 0.4,
+    })),
   ];
 
   try {
