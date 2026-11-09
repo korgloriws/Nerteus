@@ -19,7 +19,7 @@ declare global {
 
 /**
  * Espaço de anúncio AdSense.
- * Só renderiza quando NEXT_PUBLIC_ADSENSE_CLIENT existe e o usuário aceitou ads.
+ * Só dispara o anúncio quando o visitante aceitou cookies de ads e há slot configurado.
  */
 export function AdSlot({ slot, format = "auto", className = "", label = "Anúncio" }: Props) {
   const { adsenseClient, adsEnabled } = getMonetizationConfig();

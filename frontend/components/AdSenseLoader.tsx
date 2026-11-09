@@ -1,29 +1,21 @@
-"use client";
-
 import Script from "next/script";
-import { useEffect, useState } from "react";
-import { getMonetizationConfig, readConsent, type ConsentState } from "../lib/monetization";
+import { DEFAULT_ADSENSE_CLIENT, getMonetizationConfig } from "../lib/monetization";
 
-/** Carrega o script do AdSense uma vez, só com consentimento de ads. */
+/**
+ * Script do AdSense no HTML (para o Google detectar o publisher).
+ * Anúncios de verdade só sobem no AdSlot depois do consentimento de ads;
+ * o Consent Mode já manda ad_storage denied/granted.
+ */
 export function AdSenseLoader() {
-  const { adsenseClient, adsEnabled } = getMonetizationConfig();
-  const [consent, setConsent] = useState<ConsentState | null>(null);
-
-  useEffect(() => {
-    const sync = () => setConsent(readConsent());
-    sync();
-    window.addEventListener("nerteus-consent", sync);
-    return () => window.removeEventListener("nerteus-consent", sync);
-  }, []);
-
-  if (!adsEnabled || !consent?.ads) return null;
+  const { adsenseClient } = getMonetizationConfig();
+  const client = adsenseClient || DEFAULT_ADSENSE_CLIENT;
 
   return (
     <Script
       id="nerteus-adsense"
       async
       strategy="afterInteractive"
-      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(adsenseClient)}`}
+      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(client)}`}
       crossOrigin="anonymous"
     />
   );
