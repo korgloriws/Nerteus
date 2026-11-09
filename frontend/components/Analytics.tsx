@@ -1,28 +1,30 @@
-"use client";
-
 import Script from "next/script";
-import { useEffect, useState } from "react";
-import { getMonetizationConfig, readConsent, type ConsentState } from "../lib/monetization";
+import { getMonetizationConfig } from "../lib/monetization";
+import { ConsentSync } from "./ConsentSync";
 
 /**
- * Sobe GA4 / GTM só depois do consentimento de analytics.
- * Sem IDs no .env, o componente não faz nada.
+ * Injeta GTM/GA sempre que houver ID (para o Google detectar a tag),
+ * com Consent Mode v2 em "denied" até o visitante aceitar no banner.
  */
 export function Analytics() {
   const { gaId, gtmId, analyticsEnabled } = getMonetizationConfig();
-  const [consent, setConsent] = useState<ConsentState | null>(null);
 
-  useEffect(() => {
-    const sync = () => setConsent(readConsent());
-    sync();
-    window.addEventListener("nerteus-consent", sync);
-    return () => window.removeEventListener("nerteus-consent", sync);
-  }, []);
-
-  if (!analyticsEnabled || !consent?.analytics) return null;
+  if (!analyticsEnabled) return null;
 
   return (
     <>
+      <Script id="nerteus-consent-default" strategy="beforeInteractive">{`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', {
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          analytics_storage: 'denied',
+          wait_for_update: 500
+        });
+      `}</Script>
+
       {gtmId ? (
         <>
           <Script id="nerteus-gtm" strategy="afterInteractive">{`
@@ -55,6 +57,8 @@ export function Analytics() {
           `}</Script>
         </>
       ) : null}
+
+      <ConsentSync />
     </>
   );
 }
