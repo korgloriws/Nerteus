@@ -9,9 +9,12 @@ export type ConsentState = {
   updatedAt: number;
 };
 
+/** ID público do container GTM (aparece no HTML do site; não é segredo). */
+export const DEFAULT_GTM_ID = "GTM-5WX3XDMD";
+
 export function getMonetizationConfig() {
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
-  const gtmId = process.env.NEXT_PUBLIC_GTM_ID?.trim() || "";
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID?.trim() || DEFAULT_GTM_ID;
   const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT?.trim() || "";
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || "nerteuscontato@gmail.com";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://nerteus.com";
