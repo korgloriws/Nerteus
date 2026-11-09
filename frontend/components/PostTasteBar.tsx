@@ -13,9 +13,10 @@ import {
 type Props = {
   postId: number;
   slug: string;
+  tone?: "default" | "on-dark";
 };
 
-export function PostTasteBar({ postId, slug }: Props) {
+export function PostTasteBar({ postId, slug, tone = "default" }: Props) {
   const [reaction, setLocalReaction] = useState<Reaction | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -34,45 +35,41 @@ export function PostTasteBar({ postId, slug }: Props) {
     setReaction(postId, slug, next);
   }
 
+  const idle =
+    tone === "on-dark"
+      ? "border-white/30 bg-black/25 text-white hover:bg-black/40"
+      : "border-border bg-card text-foreground hover:bg-border/50";
+  const active = "border-white bg-white text-black";
+  const btn =
+    "inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-semibold sm:px-3 sm:text-sm";
+
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Sua avaliação">
+    <div className="flex max-w-full flex-wrap items-center gap-1.5 sm:gap-2" role="group" aria-label="Sua avaliação">
       <button
         type="button"
         aria-pressed={reaction === "like"}
         onClick={() => press("like")}
-        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold ${
-          reaction === "like"
-            ? "border-white bg-white text-black"
-            : "border-border bg-card text-foreground hover:bg-border/50"
-        }`}
+        className={`${btn} ${reaction === "like" ? active : idle}`}
       >
-        <HandThumbUpIcon className="h-4 w-4" />
+        <HandThumbUpIcon className="h-4 w-4 shrink-0" />
         Gostei
       </button>
       <button
         type="button"
         aria-pressed={reaction === "dislike"}
         onClick={() => press("dislike")}
-        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold ${
-          reaction === "dislike"
-            ? "border-white bg-white text-black"
-            : "border-border bg-card text-foreground hover:bg-border/50"
-        }`}
+        className={`${btn} ${reaction === "dislike" ? active : idle}`}
       >
-        <HandThumbDownIcon className="h-4 w-4" />
+        <HandThumbDownIcon className="h-4 w-4 shrink-0" />
         Não gostei
       </button>
       <button
         type="button"
         aria-pressed={saved}
         onClick={() => toggleList(postId, slug)}
-        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold ${
-          saved
-            ? "border-white bg-white text-black"
-            : "border-border bg-card text-foreground hover:bg-border/50"
-        }`}
+        className={`${btn} ${saved ? active : idle}`}
       >
-        {saved ? <CheckIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
+        {saved ? <CheckIcon className="h-4 w-4 shrink-0" /> : <PlusIcon className="h-4 w-4 shrink-0" />}
         {saved ? "Na minha lista" : "Minha lista"}
       </button>
     </div>

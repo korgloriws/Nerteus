@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Nerteus">
   <rect width="512" height="512" rx="108" fill="#0f1115"/>
-  <path
-    fill="#ffffff"
-    d="M132 108h86l130 236V108h82v296h-86L214 168v236h-82V108z"
-  />
+  <!-- N estilo Netflix: faixas que se cruzam em tons diferentes, centralizado -->
+  <g transform="translate(256 256)">
+    <!-- haste esquerda (atrás) -->
+    <path fill="#8f8f8f" d="M-102 -148h58v296h-58z"/>
+    <!-- haste direita (atrás) -->
+    <path fill="#6e6e6e" d="M44 -148h58v296h-58z"/>
+    <!-- sombra da dobra da diagonal -->
+    <path fill="#b8b8b8" d="M-102 -148h58L102 128H44L-102 -148z"/>
+    <!-- face clara da fita diagonal (frente) -->
+    <path fill="#ffffff" d="M-102 -148h58L102 148H44L-102 -148z"/>
+    <!-- brilho interno da fita -->
+    <path fill="#f3f3f3" d="M-78 -148h22L86 148H64L-78 -148z" opacity="0.55"/>
+    <!-- filete escuro no encontro, reforça o cruzamento -->
+    <path fill="#5a5a5a" d="M-48 -148h10L54 148H44L-48 -148z" opacity="0.45"/>
+  </g>
 </svg>

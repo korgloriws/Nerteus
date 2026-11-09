@@ -140,51 +140,52 @@ export function PostExperience({ post, bodyHtml, related, products, initialReadi
   }
 
   return (
-    <div className={`accent-${color.key} min-w-0`}>
-      <section className="nf-detail relative overflow-hidden bg-[#141414]">
-        <div className="relative h-[58vh] min-h-[380px] max-h-[560px] w-full sm:aspect-[2.2/1] sm:h-auto sm:max-h-[620px] sm:min-h-0">
-          {post.hero_image ? (
-            <Image
-              src={post.hero_image}
-              alt={post.title}
-              fill
-              priority
-              unoptimized
-              className="object-cover object-[center_22%] sm:object-[center_20%]"
-              sizes="100vw"
-            />
-          ) : (
-            <div className={`absolute inset-0 bg-gradient-to-br ${color.gradient}`} />
-          )}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/15 sm:hidden" />
-          <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black via-black/60 to-transparent sm:block" />
-          <div className="nf-hero-fade pointer-events-none absolute inset-x-0 bottom-0 h-28" />
-
-          <div className="absolute inset-x-0 top-0 z-10 px-3 pt-3 sm:px-8 sm:pt-4 lg:px-12">
-            <BackButton label="Voltar" tone="on-dark" />
+    <div className={`accent-${color.key} min-w-0 overflow-x-hidden`}>
+      <section className="nf-detail relative overflow-x-hidden bg-[#141414]">
+        <div className="relative w-full sm:aspect-[2.2/1] sm:max-h-[620px]">
+          <div className="relative h-[42vh] min-h-[240px] max-h-[320px] w-full sm:absolute sm:inset-0 sm:h-full sm:max-h-none sm:min-h-0">
+            {post.hero_image ? (
+              <Image
+                src={post.hero_image}
+                alt={post.title}
+                fill
+                priority
+                unoptimized
+                className="object-cover object-[center_22%] sm:object-[center_20%]"
+                sizes="100vw"
+              />
+            ) : (
+              <div className={`absolute inset-0 bg-gradient-to-br ${color.gradient}`} />
+            )}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#141414] via-black/35 to-black/10 sm:hidden" />
+            <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-black via-black/60 to-transparent sm:block" />
+            <div className="nf-hero-fade pointer-events-none absolute inset-x-0 bottom-0 hidden h-28 sm:block" />
+            <div className="absolute inset-x-0 top-0 z-10 px-3 pt-3 sm:px-8 sm:pt-4 lg:px-12">
+              <BackButton label="Voltar" tone="on-dark" />
+            </div>
           </div>
 
-          <div className="absolute inset-0 flex items-end sm:items-center">
-            <div className="relative w-full max-w-2xl space-y-3 px-4 pb-10 sm:space-y-4 sm:px-8 sm:pb-12 lg:px-12">
+          <div className="relative z-10 sm:absolute sm:inset-0 sm:flex sm:items-end lg:items-center">
+            <div className="w-full min-w-0 max-w-2xl space-y-3 px-4 pb-6 pt-4 sm:space-y-4 sm:px-8 sm:pb-12 sm:pt-0 lg:px-12">
               <p className="text-xs uppercase tracking-[0.28em] text-white/70">
                 {new Date(post.created_at).toLocaleDateString("pt-BR")}
               </p>
-              <h1 className="text-3xl font-extrabold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] sm:text-5xl">
+              <h1 className="break-words text-2xl font-extrabold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] sm:text-4xl md:text-5xl">
                 {post.title}
               </h1>
               {post.summary ? (
-                <p className="max-w-xl text-sm leading-relaxed text-white/88 sm:text-base sm:line-clamp-4">
+                <p className="line-clamp-3 max-w-xl break-words text-sm leading-relaxed text-white/88 sm:line-clamp-4 sm:text-base">
                   {post.summary}
                 </p>
               ) : (
                 <p className="text-sm text-white/70">Sem resumo disponível.</p>
               )}
-              <div className="flex flex-wrap gap-2 pt-1">
+              <div className="flex max-w-full flex-wrap gap-2 pt-1">
                 {post.tags?.map((tag) => (
                   <Link
                     key={tag}
                     href={`/tag/${encodeURIComponent(tag)}`}
-                    className="rounded-full border border-white/25 bg-black/35 px-2.5 py-1 text-[11px] uppercase tracking-wide text-white/90 hover:bg-black/50"
+                    className="max-w-full truncate rounded-full border border-white/25 bg-black/35 px-2.5 py-1 text-[11px] uppercase tracking-wide text-white/90 hover:bg-black/50"
                   >
                     {tag}
                   </Link>
@@ -194,18 +195,18 @@ export function PostExperience({ post, bodyHtml, related, products, initialReadi
                 <button
                   type="button"
                   onClick={startReading}
-                  className="inline-flex items-center gap-2 rounded bg-white px-5 py-2.5 text-sm font-bold text-black hover:bg-white/90"
+                  className="inline-flex items-center gap-2 rounded bg-white px-4 py-2.5 text-sm font-bold text-black hover:bg-white/90 sm:px-5"
                 >
                   <OpenBookIcon className="h-5 w-6" tone="on-light" />
                   {ctaLabel}
                 </button>
-                <span className="inline-flex items-center gap-2 rounded bg-[#6d6d6eb3] px-4 py-2.5 text-sm font-bold text-white">
+                <span className="inline-flex items-center gap-2 rounded bg-[#6d6d6eb3] px-3 py-2.5 text-sm font-bold text-white sm:px-4">
                   <InformationCircleIcon className="h-5 w-5" />
                   Introdução
                 </span>
               </div>
-              <div className="pt-2">
-                <PostTasteBar postId={post.id} slug={post.slug} />
+              <div className="min-w-0 pt-2">
+                <PostTasteBar postId={post.id} slug={post.slug} tone="on-dark" />
               </div>
             </div>
           </div>
