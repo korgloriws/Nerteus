@@ -93,8 +93,13 @@ export function PostTile({
     );
   }
 
+  const href =
+    showProgress
+      ? `/posts/${encodeURIComponent(slug)}?ler=1`
+      : `/posts/${encodeURIComponent(slug)}`;
+
   return (
-    <Link href={`/posts/${encodeURIComponent(slug)}`} className={wrapClass}>
+    <Link href={href} className={wrapClass}>
       {Card}
     </Link>
   );

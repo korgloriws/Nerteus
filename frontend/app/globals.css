@@ -68,6 +68,92 @@ a {
   color: #141414;
 }
 
+/* Splash PWA: thud Netflix — letras grandes entram e assentam */
+.nf-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #0f1115;
+  transition: opacity 0.55s ease, visibility 0.55s ease;
+}
+.nf-splash--out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.nf-splash-mark {
+  display: flex;
+  align-items: baseline;
+  color: #ffffff;
+  font-weight: 850;
+  font-stretch: 88%;
+  letter-spacing: -0.045em;
+  line-height: 0.85;
+  font-size: clamp(2.8rem, 12vw, 5.5rem);
+  transform: scale(1.18);
+  animation: nf-splash-settle 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.95s forwards;
+}
+.nf-splash-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: scale(1.55) translateY(0.12em);
+  animation: nf-splash-letter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.nf-splash-bar {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  width: min(42vw, 180px);
+  height: 3px;
+  border-radius: 999px;
+  transform: translateX(-50%) scaleX(0);
+  background: linear-gradient(
+    90deg,
+    #2563eb 0%,
+    #eab308 25%,
+    #16a34a 50%,
+    #f97316 75%,
+    #dc2626 100%
+  );
+  animation: nf-splash-bar 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.15s forwards;
+}
+@keyframes nf-splash-letter {
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes nf-splash-settle {
+  to {
+    transform: scale(1);
+    letter-spacing: -0.03em;
+  }
+}
+@keyframes nf-splash-bar {
+  to {
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nf-splash-mark,
+  .nf-splash-letter,
+  .nf-splash-bar {
+    animation: none;
+  }
+  .nf-splash-mark {
+    transform: none;
+  }
+  .nf-splash-letter {
+    opacity: 1;
+    transform: none;
+  }
+  .nf-splash-bar {
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
 /* Tipografia fluida básica */
 .fluid-h1 {
   font-size: clamp(1.5rem, 1.2rem + 2vw, 2.25rem);

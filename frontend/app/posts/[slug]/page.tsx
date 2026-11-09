@@ -1,19 +1,15 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { API_URL } from "../../../lib/api";
-import { PostTile } from "../../../components/PostTile";
-import { ProductCard, type AffiliateProduct } from "../../../components/ProductCard";
-import { CommentSection } from "../../../components/CommentSection";
-import { resolveColor } from "../../../lib/themeColor";
+import type { PostTileProps } from "../../../components/PostTile";
+import type { AffiliateProduct } from "../../../components/ProductCard";
+import { PostExperience } from "../../../components/PostExperience";
 import { stripHeroFromContent } from "../../../lib/stripHeroFromContent";
-import { ReadingProgressTracker } from "../../../components/ReadingProgressTracker";
-import { BackButton } from "../../../components/BackButton";
-import { PostTasteBar } from "../../../components/PostTasteBar";
 
 export const dynamic = "force-dynamic";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://31.97.167.75:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nerteus.com";
 
 type Post = {
   id: number;
@@ -28,10 +24,10 @@ type Post = {
   created_at: string;
   updated_at?: string;
   weekday?: string | null;
+  cover_url?: string | null;
 };
 
 async function getPost(slug: string): Promise<Post | null> {
-  // Next já pode entregar o slug decodificado; encode evita URL inválida no fetch.
   const encoded = encodeURIComponent(decodeURIComponent(slug));
   const res = await fetch(`${API_URL}/posts/${encoded}`, { next: { revalidate: 60 } });
   if (!res.ok) return null;
@@ -123,6 +119,18 @@ function getCoverUrl(post: Post): string | null {
   return `${siteUrl}/api/posts/${post.id}/cover`;
 }
 
+function toTile(post: Post): PostTileProps {
+  return {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    summary: post.summary,
+    tags: post.tags,
+    hero_image: post.hero_image || post.cover_url,
+    weekday: post.weekday,
+  };
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -151,7 +159,16 @@ export async function generateMetadata({
       url: canonicalUrl,
       siteName: "Nerteus",
       locale: "pt_BR",
-      ...(coverUrl && { images: [{ url: coverUrl }] }),
+      ...(coverUrl && {
+        images: [
+          {
+            url: coverUrl,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          },
+        ],
+      }),
       publishedTime: post.created_at,
       ...(post.updated_at && { modifiedTime: post.updated_at }),
       tags: post.tags,
@@ -165,81 +182,37 @@ export async function generateMetadata({
   };
 }
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
+export default async function PostPage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams?: { ler?: string };
+}) {
   const post = await getPost(params.slug);
   if (!post) return notFound();
   const [related, products] = await Promise.all([getRelated(post), getPostProducts(post)]);
-  const color = resolveColor(post.tags, post.weekday);
   const bodyHtml = stripHeroFromContent(post.content, post.hero_image);
+  const initialReading = searchParams?.ler === "1";
 
   return (
-    <div className={`space-y-8 sm:space-y-10 accent-${color.key} min-w-0`}>
-      <ReadingProgressTracker postId={post.id} slug={post.slug} />
-      <article data-reading-root className="space-y-5 sm:space-y-6 min-w-0">
-        <BackButton label="Voltar" />
-        <div className="min-w-0">
-          <div className="text-sm text-muted mb-1">{new Date(post.created_at).toLocaleDateString("pt-BR")}</div>
-          <h1 className="fluid-h1 font-bold mb-3 text-foreground">{post.title}</h1>
-          <p className="text-base sm:text-lg text-muted break-words">{post.summary}</p>
-          <div className="mt-4">
-            <PostTasteBar postId={post.id} slug={post.slug} />
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {post.tags?.map((tag) => (
-              <Link
-                key={tag}
-                href={`/tag/${encodeURIComponent(tag)}`}
-                className="text-[11px] uppercase tracking-wide rounded-full px-2 py-1 accent-badge hover:opacity-80"
-              >
-                {tag}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <div
-          className="prose max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground prose-a:text-primary dark:prose-invert rich-content"
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
-        />
-      </article>
-
-      {related.length > 0 && (
-        <section className="space-y-4 min-w-0">
-          <h2 className="fluid-h2 font-semibold">Próximas leituras</h2>
-          <p className="text-sm text-muted">Sugestões escolhidas para seguir a partir daqui</p>
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((item) => (
-              <PostTile key={item.id} {...item} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {products.length > 0 && (
-        <section className="space-y-4 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="fluid-h2 font-semibold">Produtos relacionados</h2>
-            <Link href="/loja" className="text-sm text-primary hover:opacity-80 whitespace-nowrap">
-              Ver loja →
-            </Link>
-          </div>
-          <div className="grid items-start gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      <CommentSection postId={post.id} />
-
-      <div className="pt-2 pb-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-black hover:bg-white/90"
-        >
-          ← Voltar ao início
-        </Link>
-      </div>
-    </div>
+    <Suspense fallback={<div className="min-h-[50vh] bg-[#141414]" />}>
+      <PostExperience
+        post={{
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          summary: post.summary,
+          tags: post.tags || [],
+          hero_image: post.hero_image,
+          created_at: post.created_at,
+          weekday: post.weekday,
+        }}
+        bodyHtml={bodyHtml}
+        related={related.map(toTile)}
+        products={products}
+        initialReading={initialReading}
+      />
+    </Suspense>
   );
 }

@@ -6,8 +6,9 @@ import { usePathname } from "next/navigation";
 export function PageFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname() || "/";
   const home = pathname === "/";
+  const postDetail = pathname.startsWith("/posts/");
 
-  if (home) {
+  if (home || postDetail) {
     return <div className="w-full overflow-x-hidden pb-40 pt-14 lg:pb-8">{children}</div>;
   }
 

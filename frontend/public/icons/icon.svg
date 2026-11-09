@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Nerteus">
+  <rect width="512" height="512" rx="108" fill="#0f1115"/>
+  <path
+    fill="#ffffff"
+    d="M132 108h86l130 236V108h82v296h-86L214 168v236h-82V108z"
+  />
+</svg>
