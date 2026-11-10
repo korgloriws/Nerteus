@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import { ThemeProviderClient } from "../components/ThemeProviderClient";
 import { PageFrame } from "../components/PageFrame";
 import { SiteNav } from "../components/SiteNav";
@@ -76,7 +76,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <PwaRegister />
           <Analytics />
           <AdSenseLoader />
-          <SiteNav />
+          <Suspense fallback={null}>
+            <SiteNav />
+          </Suspense>
           <PageFrame>{children}</PageFrame>
           <FooterGate>
             <SiteFooter />

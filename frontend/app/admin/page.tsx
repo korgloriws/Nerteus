@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import type { ReactQuillProps } from "react-quill";
 import React, { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApiUrl } from "../../lib/api";
-import { ThemeToggle } from "../../components/ThemeToggle";
 import { BackButton } from "../../components/BackButton";
 import { AdminProducts } from "../../components/AdminProducts";
 import { stripHeroFromContent } from "../../lib/stripHeroFromContent";
@@ -629,7 +628,6 @@ export default function AdminPage() {
                 Novo
               </button>
             </div>
-            <ThemeToggle />
             <button
               type="button"
               onClick={handleLogout}

@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AdjustmentsHorizontalIcon,
   HomeIcon,
@@ -41,9 +41,11 @@ function isActive(pathname: string, href: string) {
 
 export function SiteNav() {
   const pathname = usePathname() || "/";
+  const searchParams = useSearchParams();
   const router = useRouter();
   const onAdmin = pathname.startsWith("/admin");
   const onPost = pathname.startsWith("/posts/");
+  const onReadingPost = onPost && searchParams.get("ler") === "1";
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -163,7 +165,7 @@ export function SiteNav() {
             </button>
             <div className="hidden items-center gap-2 md:flex">
               <LanguageSwitcher />
-              {onPost && <ThemeToggle />}
+              {onReadingPost && <ThemeToggle />}
               <Link
                 href="/sobre"
                 className="rounded-full px-3 py-1.5 text-sm font-semibold text-muted hover:bg-card/70 hover:text-foreground"
@@ -186,7 +188,7 @@ export function SiteNav() {
                 setSearchOpen(false);
               }}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground hover:bg-card md:hidden"
-              aria-label={settingsOpen ? "Fechar ajustes" : onPost ? "Idioma e tema" : "Idioma"}
+              aria-label={settingsOpen ? "Fechar ajustes" : onReadingPost ? "Idioma e tema" : "Idioma"}
               aria-expanded={settingsOpen}
             >
               <AdjustmentsHorizontalIcon className="h-5 w-5" />
@@ -235,7 +237,7 @@ export function SiteNav() {
             <div className="mx-auto flex max-w-6xl flex-col gap-3">
               <div className="flex flex-wrap items-center gap-3">
                 <LanguageSwitcher />
-                {onPost && <ThemeToggle />}
+                {onReadingPost && <ThemeToggle />}
               </div>
               <div className="flex flex-wrap gap-2" aria-label="Informações do site">
                 {LEGAL_LINKS.map((link) => (
