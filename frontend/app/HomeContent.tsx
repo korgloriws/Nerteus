@@ -8,6 +8,15 @@ import { humanizeTag, normalizeTagKey, preferAccentedLabel } from "../lib/tagLab
 import { classifyProgress, readReadingHistory, type ReadingEntry } from "../lib/readingProgress";
 import { postsInList, readTaste, recommendFromTaste, type TasteEntry } from "../lib/taste";
 import { WEEKDAYS, weekdaySectionTitle } from "../lib/weekdays";
+import {
+  hourSeed,
+  popularityWeight,
+  sortByTrending,
+  sortByViewsDesc,
+  sortNewWithTraction,
+  takeUnique,
+  weightedSample,
+} from "../lib/homeRanking";
 
 export type PostCardData = {
   id: number;
@@ -47,112 +56,118 @@ const WEEKDAY_SECTION: Record<string, string> = Object.fromEntries(
 
 type TileData = PostTileProps & { created_at: string; views?: number; weekday?: string | null; day_theme?: string | null };
 
-function ageDays(createdAt: string) {
-  return Math.max(1, (Date.now() - new Date(createdAt).getTime()) / (24 * 60 * 60 * 1000));
-}
-
-/** Views com peso de recência — posts novos sobem mais fácil em "Em alta". */
-function trendingScore(post: TileData) {
-  const views = post.views ?? 0;
-  return views / Math.pow(ageDays(post.created_at), 0.65);
-}
-
 function groupSections(cards: PostCardData[]) {
   const posts = cards.map(cardToTileProps);
-  const byViews = [...posts].sort((a, b) => {
-    const av = a.views ?? 0;
-    const bv = b.views ?? 0;
-    if (av !== bv) return bv - av;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-  const byTrending = [...posts].sort((a, b) => {
-    const diff = trendingScore(b) - trendingScore(a);
-    if (diff !== 0) return diff;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-  const hero = byTrending.slice(0, 5);
+  const seed = hourSeed();
+  const byViews = sortByViewsDesc(posts);
+  const byTrending = sortByTrending(posts);
+
+  // Hero: o que está acelerando (não o Top 10 puro)
+  const hero = takeUnique([byTrending, byViews], 5);
 
   const now = Date.now();
   const last30 = now - 30 * 24 * 60 * 60 * 1000;
-  const top10Month = [...posts]
-    .filter((p) => new Date(p.created_at).getTime() >= last30)
-    .sort((a, b) => (b.views ?? 0) - (a.views ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 10);
-  const topTrending = byTrending.filter((p) => (p.views ?? 0) > 0 || ageDays(p.created_at) <= 14).slice(0, 15);
-  const mostViewed = byViews.filter((p) => (p.views ?? 0) > 0).slice(0, 10);
-  const newest = [...posts]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 20);
-  const sorted = byViews;
 
-  const tagBuckets: Record<string, { labels: string[]; posts: typeof sorted }> = {};
-  for (const post of sorted) {
+  // Top 10: ranking duro all-time (única faixa “oficial” por views absolutas)
+  const top10 = byViews.filter((p) => (p.views ?? 0) > 0).slice(0, 10);
+
+  // Em alta: velocidade (views/idade) — ordem diferente do Top 10
+  const trending = byTrending
+    .filter((p) => (p.views ?? 0) > 0 || ageDaysSafe(p.created_at) <= 21)
+    .slice(0, 15);
+
+  // Top do mês: só criados nos últimos 30 dias, por views
+  const top10Month = sortByViewsDesc(
+    posts.filter((p) => new Date(p.created_at).getTime() >= last30)
+  ).slice(0, 10);
+
+  // Novos: recentes com boost do que já puxa view
+  const newest = sortNewWithTraction(posts).slice(0, 18);
+
+  // Em destaque: amostragem estilo stream — popular tem mais chance,
+  // mas não copia a ordem do Top 10 (tira os 3 primeiros do pool)
+  const highlightPool = posts.filter((p) => !top10.slice(0, 3).some((t) => t.id === p.id));
+  const featured = weightedSample(
+    highlightPool.length ? highlightPool : posts,
+    popularityWeight,
+    16,
+    seed + 17
+  );
+
+  // Faixa extra: “vale a pena” — amostragem só entre quem já tem tração
+  const withTraction = posts.filter((p) => (p.views ?? 0) >= 2);
+  const worthIt = weightedSample(withTraction, popularityWeight, 12, seed + 91);
+
+  const tagBuckets: Record<string, { labels: string[]; posts: TileData[] }> = {};
+  for (const post of byTrending) {
     (post.tags || []).forEach((tag) => {
       const key = normalizeTagKey(tag);
       if (!key) return;
       if (!tagBuckets[key]) tagBuckets[key] = { labels: [], posts: [] };
       tagBuckets[key].labels.push(tag);
-      // evita duplicar o mesmo post na mesma seção
       if (!tagBuckets[key].posts.some((p) => p.id === post.id)) {
         tagBuckets[key].posts.push(post);
       }
     });
   }
 
-  const weekdayBuckets: Record<string, typeof sorted> = {};
-  for (const post of sorted) {
+  const weekdayBuckets: Record<string, TileData[]> = {};
+  for (const post of byTrending) {
     const day = (post.weekday || "").toLowerCase();
     if (!day || !WEEKDAY_SECTION[day]) continue;
     if (!weekdayBuckets[day]) weekdayBuckets[day] = [];
     weekdayBuckets[day].push(post);
   }
 
-  const sections: { title: string; posts: typeof sorted }[] = [];
+  const sections: { title: string; posts: TileData[] }[] = [];
 
-  if (newest.length) sections.push({ title: "Novos posts", posts: newest });
-  if (topTrending.length) sections.push({ title: "Em alta agora", posts: topTrending });
-  if (mostViewed.length) sections.push({ title: "Mais vistos", posts: mostViewed });
-  if (top10Month.length) sections.push({ title: "Top 10 do mês", posts: top10Month });
-  // Destaque: recentes (90 dias) por views — evita repetir o ranking all-time
-  const last90 = now - 90 * 24 * 60 * 60 * 1000;
-  const featured = byViews
-    .filter((p) => new Date(p.created_at).getTime() >= last90)
-    .slice(0, 20);
+  if (trending.length) sections.push({ title: "Em alta agora", posts: trending });
+  if (top10.length) sections.push({ title: "Top 10", posts: top10 });
   if (featured.length) sections.push({ title: "Em destaque", posts: featured });
+  if (newest.length) sections.push({ title: "Novos posts", posts: newest });
+  if (top10Month.length >= 3) sections.push({ title: "Top 10 do mês", posts: top10Month });
+  if (worthIt.length >= 4) sections.push({ title: "Em alta entre leitores", posts: worthIt });
 
-  // Seções por dia da semana (quando houver posts)
-  Object.entries(WEEKDAY_SECTION).forEach(([day, title]) => {
+  Object.entries(WEEKDAY_SECTION).forEach(([day, title], index) => {
     const list = weekdayBuckets[day];
-    if (list?.length) sections.push({ title, posts: list.slice(0, 20) });
+    if (!list?.length) return;
+    // dentro da faixa: amostra ponderada (sucesso aparece mais)
+    const sampled = weightedSample(list, popularityWeight, Math.min(16, list.length), seed + 200 + index);
+    sections.push({ title, posts: sampled.length ? sampled : list.slice(0, 16) });
   });
 
-  // Fila por tag só nasce com 5+ posts. Os demais entram em Novos posts e nas faixas padrão.
   const MIN_POSTS_FOR_TAG_ROW = 5;
   Object.entries(tagBuckets)
     .filter(([, bucket]) => bucket.posts.length >= MIN_POSTS_FOR_TAG_ROW)
-    .map(([key, bucket]) => {
-      const newest = Math.max(...bucket.posts.map((p) => new Date(p.created_at).getTime()));
-      const score = bucket.posts.length * 1_000_000 + newest;
+    .map(([key, bucket], index) => {
+      const sampled = weightedSample(
+        bucket.posts,
+        popularityWeight,
+        Math.min(16, bucket.posts.length),
+        seed + 400 + index
+      );
+      const traction = bucket.posts.reduce((s, p) => s + (p.views ?? 0), 0);
       return {
         key,
-        score,
+        score: traction * 1_000 + bucket.posts.length,
         label: preferAccentedLabel(bucket.labels) || humanizeTag(key),
-        posts: bucket.posts,
+        posts: sampled,
       };
     })
     .sort((a, b) => b.score - a.score)
     .forEach((item) => {
-      sections.push({
-        title: item.label,
-        posts: item.posts.slice(0, 20),
-      });
+      sections.push({ title: item.label, posts: item.posts });
     });
 
   if (!sections.length) {
-    sections.push({ title: "Novidades", posts: sorted.slice(0, 15) });
+    sections.push({ title: "Novidades", posts: byViews.slice(0, 15) });
   }
 
-  return { hero, sections, all: sorted };
+  return { hero, sections, all: byViews };
+}
+
+function ageDaysSafe(createdAt: string) {
+  return Math.max(1, (Date.now() - new Date(createdAt).getTime()) / (24 * 60 * 60 * 1000));
 }
 
 export function HomeContent({ posts }: Props) {
@@ -251,7 +266,7 @@ export function HomeContent({ posts }: Props) {
               key={section.title}
               title={section.title}
               posts={section.posts}
-              numbered={section.title === "Top 10 do mês"}
+              numbered={section.title === "Top 10" || section.title === "Top 10 do mês"}
             />
           ))}
           <div ref={loadMoreRef} className="h-1 w-full" />
