@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import { getApiUrl } from "../lib/api";
+import { getPublicSiteUrl } from "../lib/siteUrl";
 import { HomeContent, type PostCardData } from "./HomeContent";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: getPublicSiteUrl(),
+  },
+};
 
 async function getPosts(): Promise<PostCardData[]> {
   try {

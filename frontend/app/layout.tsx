@@ -11,10 +11,11 @@ import { FooterGate } from "../components/FooterGate";
 import { ConsentBanner } from "../components/ConsentBanner";
 import { Analytics } from "../components/Analytics";
 import { AdSenseLoader } from "../components/AdSenseLoader";
+import { getPublicSiteUrl } from "../lib/siteUrl";
 
 export const dynamic = "force-dynamic";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nerteus.com";
+const siteUrl = getPublicSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

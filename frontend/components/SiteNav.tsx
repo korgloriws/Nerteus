@@ -286,10 +286,21 @@ export function SiteNav() {
       <nav
         className="fixed inset-x-3 z-40 lg:hidden"
         style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-        aria-label="Faixas da semana"
+        aria-label="Início e faixas da semana"
       >
         <div className="mx-auto max-w-md overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
-          <div className="grid grid-cols-5 px-1.5 py-2" aria-label="Faixas">
+          <div className="grid grid-cols-6 px-1.5 py-2">
+            <Link
+              href="/"
+              className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-1.5 text-[11px] font-semibold leading-none ${
+                pathname === "/" ? "bg-background text-foreground" : "text-muted"
+              }`}
+              aria-current={pathname === "/" ? "page" : undefined}
+              aria-label="Início"
+            >
+              <HomeIcon className="h-4 w-4" />
+              Início
+            </Link>
             {WEEKDAYS.map((day) => {
               const href = `/dia/${day.slug}`;
               const active = pathname === href;

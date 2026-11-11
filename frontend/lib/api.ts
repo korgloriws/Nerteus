@@ -23,7 +23,8 @@ export function getApiUrl(): string {
     return publicUrl;
   }
 
-  return "http://api:8000";
+  // Container único (Next + uvicorn no mesmo processo/host)
+  return "http://127.0.0.1:8000";
 }
 
 export async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
