@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
-  AdjustmentsHorizontalIcon,
+  Bars3Icon,
   HomeIcon,
   MagnifyingGlassIcon,
   PencilSquareIcon,
@@ -47,7 +47,7 @@ export function SiteNav() {
   const onPost = pathname.startsWith("/posts/");
   const onReadingPost = onPost && searchParams.get("ler") === "1";
   const [searchOpen, setSearchOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [catalog, setCatalog] = useState<SearchPost[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,7 +60,7 @@ export function SiteNav() {
 
   useEffect(() => {
     setSearchOpen(false);
-    setSettingsOpen(false);
+    setMenuOpen(false);
     setQuery("");
   }, [pathname]);
 
@@ -155,7 +155,7 @@ export function SiteNav() {
               type="button"
               onClick={() => {
                 setSearchOpen((open) => !open);
-                setSettingsOpen(false);
+                setMenuOpen(false);
               }}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground hover:bg-card"
               aria-label={searchOpen ? "Fechar busca" : "Buscar"}
@@ -184,14 +184,14 @@ export function SiteNav() {
             <button
               type="button"
               onClick={() => {
-                setSettingsOpen((open) => !open);
+                setMenuOpen((open) => !open);
                 setSearchOpen(false);
               }}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground hover:bg-card md:hidden"
-              aria-label={settingsOpen ? "Fechar ajustes" : onReadingPost ? "Idioma e tema" : "Idioma"}
-              aria-expanded={settingsOpen}
+              aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={menuOpen}
             >
-              <AdjustmentsHorizontalIcon className="h-5 w-5" />
+              {menuOpen ? <XMarkIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -232,9 +232,36 @@ export function SiteNav() {
             </div>
           </div>
         )}
-        {settingsOpen && (
+        {menuOpen && (
           <div className="border-t border-border bg-background px-3 py-3 md:hidden">
             <div className="mx-auto flex max-w-6xl flex-col gap-3">
+              <div className="grid grid-cols-3 gap-2" aria-label="Navegação">
+                {LINKS.map((link) => {
+                  const active = isActive(pathname, link.href);
+                  const Icon = link.icon;
+                  const isEditor = link.href === "/admin";
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-xs font-semibold ${
+                        isEditor
+                          ? active
+                            ? "border-indigo-500 bg-indigo-600 text-white"
+                            : "border-indigo-500/40 bg-indigo-600/20 text-indigo-200"
+                          : active
+                            ? "border-foreground/20 bg-card text-foreground"
+                            : "border-border bg-card/60 text-muted"
+                      }`}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      <Icon className="h-5 w-5" />
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </div>
               <div className="flex flex-wrap items-center gap-3">
                 <LanguageSwitcher />
                 {onReadingPost && <ThemeToggle />}
@@ -244,7 +271,7 @@ export function SiteNav() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    onClick={() => setSettingsOpen(false)}
+                    onClick={() => setMenuOpen(false)}
                     className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted hover:text-foreground"
                   >
                     {link.label}
@@ -259,10 +286,10 @@ export function SiteNav() {
       <nav
         className="fixed inset-x-3 z-40 lg:hidden"
         style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-        aria-label="Navegação principal"
+        aria-label="Faixas da semana"
       >
         <div className="mx-auto max-w-md overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
-          <div className="grid grid-cols-5 px-1.5 pt-2" aria-label="Faixas">
+          <div className="grid grid-cols-5 px-1.5 py-2" aria-label="Faixas">
             {WEEKDAYS.map((day) => {
               const href = `/dia/${day.slug}`;
               const active = pathname === href;
@@ -270,7 +297,7 @@ export function SiteNav() {
                 <Link
                   key={day.slug}
                   href={href}
-                  className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-1 text-[11px] font-semibold leading-none ${
+                  className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-1.5 text-[11px] font-semibold leading-none ${
                     active ? "bg-background text-foreground" : "text-muted"
                   }`}
                   aria-current={active ? "page" : undefined}
@@ -281,25 +308,6 @@ export function SiteNav() {
                 </Link>
               );
             })}
-          </div>
-          <div className="flex">
-          {LINKS.map((link) => {
-            const active = isActive(pathname, link.href);
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex min-h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-semibold ${
-                  active ? "bg-background text-foreground" : "text-muted"
-                }`}
-                aria-current={active ? "page" : undefined}
-              >
-                <Icon className="h-6 w-6" />
-                {link.label}
-              </Link>
-            );
-          })}
           </div>
         </div>
       </nav>

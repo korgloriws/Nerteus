@@ -162,15 +162,23 @@ def get_post_cover(
     )
 
 
-@router.get("/{slug}", response_model=PostPublic)
-def get_post(*, session: Session = Depends(get_session), slug: str):
+@router.post("/{slug}/view", status_code=status.HTTP_204_NO_CONTENT)
+def register_post_view(*, session: Session = Depends(get_session), slug: str):
+    """Conta 1 visualização (chamado pelo browser; não depende do cache SSR)."""
     post = _find_post_by_slug(session, slug)
     if not post or post.status != "published":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     post.views = (post.views or 0) + 1
     session.add(post)
     session.commit()
-    session.refresh(post)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{slug}", response_model=PostPublic)
+def get_post(*, session: Session = Depends(get_session), slug: str):
+    post = _find_post_by_slug(session, slug)
+    if not post or post.status != "published":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
     return post
 
 

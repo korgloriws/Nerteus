@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { OpenBookIcon } from "./OpenBookIcon";
 import { BackButton } from "./BackButton";
@@ -14,6 +14,7 @@ import { PostTile, type PostTileProps } from "./PostTile";
 import { ProductCard, type AffiliateProduct } from "./ProductCard";
 import { CommentSection } from "./CommentSection";
 import { AdSlot } from "./AdSlot";
+import { PostViewBeacon } from "./PostViewBeacon";
 import { classifyProgress, getReadingEntry } from "../lib/readingProgress";
 import { resolveColor } from "../lib/themeColor";
 
@@ -30,18 +31,24 @@ type PostData = {
 
 type Props = {
   post: PostData;
-  bodyHtml: string;
   related: PostTileProps[];
   products: AffiliateProduct[];
   initialReading?: boolean;
+  /** Corpo do post (Server Component) — sempre no HTML; só o visual esconde na ficha. */
+  children: ReactNode;
 };
 
 /**
- * Visual: ficha Netflix até “Seguir leitura”.
- * SEO/AdSense: o corpo do artigo já vem no HTML (só fica oculto até abrir a leitura).
- * Não é cloaking — é o mesmo texto que o visitante vê depois do clique.
+ * Visual Netflix na ficha; o HTML do artigo vem do servidor via children
+ * e fica invisível até “Seguir leitura” (mesmo texto — sem cloaking).
  */
-export function PostExperience({ post, bodyHtml, related, products, initialReading = false }: Props) {
+export function PostExperience({
+  post,
+  related,
+  products,
+  initialReading = false,
+  children,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const color = resolveColor(post.tags, post.weekday);
@@ -71,6 +78,7 @@ export function PostExperience({ post, bodyHtml, related, products, initialReadi
 
   return (
     <div className={`accent-${color.key} min-w-0 ${reading ? "space-y-8 sm:space-y-10" : "overflow-x-hidden"}`}>
+      <PostViewBeacon postId={post.id} slug={post.slug} />
       {!reading ? (
         <section className="nf-detail relative overflow-x-hidden bg-[#141414]">
           <div className="relative w-full sm:aspect-[2.2/1] sm:max-h-[620px]">
@@ -93,7 +101,6 @@ export function PostExperience({ post, bodyHtml, related, products, initialReadi
               <div className="nf-hero-fade pointer-events-none absolute inset-x-0 bottom-0 hidden h-28 sm:block" />
             </div>
 
-            {/* Fora do overlay de texto — no desktop o inset-0 cobria o clique */}
             <div className="absolute inset-x-0 top-0 z-20 px-3 pt-3 sm:px-8 sm:pt-4 lg:px-12">
               <BackButton label="Voltar" tone="on-dark" />
             </div>
@@ -149,7 +156,7 @@ export function PostExperience({ post, bodyHtml, related, products, initialReadi
         <ReadingProgressTracker postId={post.id} slug={post.slug} />
       )}
 
-      {/* Sempre no HTML; visível só no modo leitura (mesmo conteúdo — sem cloaking). */}
+      {/* children = HTML do servidor; hidden só afeta o visual da ficha */}
       <article
         id="ler"
         data-reading-root
@@ -180,10 +187,7 @@ export function PostExperience({ post, bodyHtml, related, products, initialReadi
             ))}
           </div>
         </div>
-        <div
-          className="prose rich-content max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-li:text-foreground prose-a:text-primary dark:prose-invert"
-          dangerouslySetInnerHTML={{ __html: bodyHtml }}
-        />
+        {children}
       </article>
 
       {!reading && related.length > 0 ? (

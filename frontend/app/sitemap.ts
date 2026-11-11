@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getApiUrl } from "../lib/api";
+import { getPublicSiteUrl } from "../lib/siteUrl";
 
 type PostCard = {
   id: number;
@@ -7,7 +8,7 @@ type PostCard = {
   created_at: string;
 };
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://nerteus.com";
+const siteUrl = getPublicSiteUrl();
 
 const LEGAL_PATHS = ["/sobre", "/contato", "/privacidade", "/cookies", "/termos", "/etica", "/loja"];
 

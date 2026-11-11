@@ -47,25 +47,43 @@ const WEEKDAY_SECTION: Record<string, string> = Object.fromEntries(
 
 type TileData = PostTileProps & { created_at: string; views?: number; weekday?: string | null; day_theme?: string | null };
 
+function ageDays(createdAt: string) {
+  return Math.max(1, (Date.now() - new Date(createdAt).getTime()) / (24 * 60 * 60 * 1000));
+}
+
+/** Views com peso de recência — posts novos sobem mais fácil em "Em alta". */
+function trendingScore(post: TileData) {
+  const views = post.views ?? 0;
+  return views / Math.pow(ageDays(post.created_at), 0.65);
+}
+
 function groupSections(cards: PostCardData[]) {
   const posts = cards.map(cardToTileProps);
-  const sorted = [...posts].sort((a, b) => {
+  const byViews = [...posts].sort((a, b) => {
     const av = a.views ?? 0;
     const bv = b.views ?? 0;
     if (av !== bv) return bv - av;
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
-  const hero = sorted.slice(0, 5);
+  const byTrending = [...posts].sort((a, b) => {
+    const diff = trendingScore(b) - trendingScore(a);
+    if (diff !== 0) return diff;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+  const hero = byTrending.slice(0, 5);
 
   const now = Date.now();
   const last30 = now - 30 * 24 * 60 * 60 * 1000;
-  const monthTop = sorted.filter((p) => new Date(p.created_at).getTime() >= last30);
-  const top10Month = (monthTop.length ? monthTop : sorted).slice(0, 10);
-  const topTrending = sorted.slice(0, 15);
-  const mostViewed = [...sorted].filter((p) => (p.views ?? 0) > 0).slice(0, 10);
+  const top10Month = [...posts]
+    .filter((p) => new Date(p.created_at).getTime() >= last30)
+    .sort((a, b) => (b.views ?? 0) - (a.views ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 10);
+  const topTrending = byTrending.filter((p) => (p.views ?? 0) > 0 || ageDays(p.created_at) <= 14).slice(0, 15);
+  const mostViewed = byViews.filter((p) => (p.views ?? 0) > 0).slice(0, 10);
   const newest = [...posts]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 20);
+  const sorted = byViews;
 
   const tagBuckets: Record<string, { labels: string[]; posts: typeof sorted }> = {};
   for (const post of sorted) {
@@ -95,7 +113,12 @@ function groupSections(cards: PostCardData[]) {
   if (topTrending.length) sections.push({ title: "Em alta agora", posts: topTrending });
   if (mostViewed.length) sections.push({ title: "Mais vistos", posts: mostViewed });
   if (top10Month.length) sections.push({ title: "Top 10 do mês", posts: top10Month });
-  if (sorted.length) sections.push({ title: "Em destaque", posts: sorted.slice(0, 20) });
+  // Destaque: recentes (90 dias) por views — evita repetir o ranking all-time
+  const last90 = now - 90 * 24 * 60 * 60 * 1000;
+  const featured = byViews
+    .filter((p) => new Date(p.created_at).getTime() >= last90)
+    .slice(0, 20);
+  if (featured.length) sections.push({ title: "Em destaque", posts: featured });
 
   // Seções por dia da semana (quando houver posts)
   Object.entries(WEEKDAY_SECTION).forEach(([day, title]) => {

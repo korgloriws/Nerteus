@@ -5,6 +5,7 @@ import { API_URL } from "../../../lib/api";
 import type { PostTileProps } from "../../../components/PostTile";
 import type { AffiliateProduct } from "../../../components/ProductCard";
 import { PostExperience } from "../../../components/PostExperience";
+import { PostBodyHtml } from "../../../components/PostBodyHtml";
 import { stripHeroFromContent } from "../../../lib/stripHeroFromContent";
 
 export const dynamic = "force-dynamic";
@@ -208,11 +209,12 @@ export default async function PostPage({
           created_at: post.created_at,
           weekday: post.weekday,
         }}
-        bodyHtml={bodyHtml}
         related={related.map(toTile)}
         products={products}
         initialReading={initialReading}
-      />
+      >
+        <PostBodyHtml html={bodyHtml} />
+      </PostExperience>
     </Suspense>
   );
 }
