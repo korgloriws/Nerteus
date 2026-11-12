@@ -11,9 +11,9 @@ import { WEEKDAYS, weekdaySectionTitle } from "../lib/weekdays";
 import {
   hourSeed,
   popularityWeight,
+  sortByNewest,
   sortByTrending,
   sortByViewsDesc,
-  sortNewWithTraction,
   takeUnique,
   weightedSample,
 } from "../lib/homeRanking";
@@ -81,8 +81,8 @@ function groupSections(cards: PostCardData[]) {
     posts.filter((p) => new Date(p.created_at).getTime() >= last30)
   ).slice(0, 10);
 
-  // Novos: recentes com boost do que já puxa view
-  const newest = sortNewWithTraction(posts).slice(0, 18);
+  // Novos: só ordem de publicação (mais recente → mais antigo)
+  const newest = sortByNewest(posts).slice(0, 18);
 
   // Em destaque: amostragem estilo stream — popular tem mais chance,
   // mas não copia a ordem do Top 10 (tira os 3 primeiros do pool)

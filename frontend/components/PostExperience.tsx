@@ -27,6 +27,7 @@ type PostData = {
   hero_image?: string | null;
   created_at: string;
   weekday?: string | null;
+  day_theme?: string | null;
 };
 
 type Props = {
@@ -78,7 +79,14 @@ export function PostExperience({
 
   return (
     <div className={`accent-${color.key} min-w-0 ${reading ? "space-y-8 sm:space-y-10" : "overflow-x-hidden"}`}>
-      <PostViewBeacon postId={post.id} slug={post.slug} />
+      <PostViewBeacon
+        postId={post.id}
+        slug={post.slug}
+        title={post.title}
+        weekday={post.weekday}
+        dayTheme={post.day_theme}
+        surface={reading ? "read" : "intro"}
+      />
       {!reading ? (
         <section className="nf-detail relative overflow-x-hidden bg-[#141414]">
           <div className="relative w-full sm:aspect-[2.2/1] sm:max-h-[620px]">

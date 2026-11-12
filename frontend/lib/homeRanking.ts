@@ -96,19 +96,11 @@ export function sortByTrending<T extends RankablePost>(items: T[]): T[] {
   });
 }
 
-/** Novos com leve boost do que já está performando. */
-export function sortNewWithTraction<T extends RankablePost>(items: T[]): T[] {
-  return [...items].sort((a, b) => {
-    const score = (p: RankablePost) => {
-      const age = ageDays(p.created_at);
-      const views = p.views ?? 0;
-      // prioriza recentes; views recentes empurram para frente
-      return -age * 10 + Math.log1p(views) * 2;
-    };
-    const diff = score(b) - score(a);
-    if (diff !== 0) return diff;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+/** Novos posts: ordem estrita de publicação (mais recente primeiro). */
+export function sortByNewest<T extends RankablePost>(items: T[]): T[] {
+  return [...items].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 }
 
 export function takeUnique<T extends { id: number }>(rows: T[][], limit: number): T[] {

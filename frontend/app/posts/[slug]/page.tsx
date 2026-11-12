@@ -25,6 +25,7 @@ type Post = {
   created_at: string;
   updated_at?: string;
   weekday?: string | null;
+  day_theme?: string | null;
   cover_url?: string | null;
 };
 
@@ -208,6 +209,7 @@ export default async function PostPage({
           hero_image: post.hero_image,
           created_at: post.created_at,
           weekday: post.weekday,
+          day_theme: post.day_theme,
         }}
         related={related.map(toTile)}
         products={products}

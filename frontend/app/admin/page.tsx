@@ -6,6 +6,7 @@ import type { ReactQuillProps } from "react-quill";
 import React, { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApiUrl } from "../../lib/api";
 import { BackButton } from "../../components/BackButton";
+import { AdminAnalytics } from "../../components/AdminAnalytics";
 import { AdminProducts } from "../../components/AdminProducts";
 import { stripHeroFromContent } from "../../lib/stripHeroFromContent";
 import { slugify } from "../../lib/slugify";
@@ -122,7 +123,7 @@ export default function AdminPage() {
   const [page, setPage] = useState(0);
   const pageSize = 15;
   const [hasNext, setHasNext] = useState(false);
-  const [view, setView] = useState<"editor" | "lista" | "loja">("editor");
+  const [view, setView] = useState<"editor" | "lista" | "loja" | "analytics">("editor");
   const [listStatus, setListStatus] = useState<"all" | "published" | "draft">("all");
   const quillRef = useRef<any>(null); // ReactQuill component
   const heroFileRef = useRef<HTMLInputElement | null>(null);
@@ -622,6 +623,15 @@ export default function AdminPage() {
               </button>
               <button
                 type="button"
+                onClick={() => setView("analytics")}
+                className={`rounded px-4 py-2 text-sm font-semibold ${
+                  view === "analytics" ? "bg-indigo-600 text-white" : "bg-border text-foreground hover:bg-border/80"
+                }`}
+              >
+                Analytics
+              </button>
+              <button
+                type="button"
                 onClick={newPost}
                 className="rounded px-4 py-2 text-sm font-semibold bg-border text-foreground hover:bg-border/80"
               >
@@ -1022,6 +1032,8 @@ export default function AdminPage() {
           )}
 
           {view === "loja" && <AdminProducts token={token} />}
+
+          {view === "analytics" && <AdminAnalytics token={token} />}
         </>
       )}
     </main>

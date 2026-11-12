@@ -73,3 +73,18 @@ class Media(SQLModel, table=True):
     post_id: Optional[int] = Field(default=None, index=True, foreign_key="post.id")
     created_at: datetime = Field(default_factory=_utc_now, index=True)
 
+
+class PostViewEvent(SQLModel, table=True):
+    """Evento bruto de acesso a post (analytics do editor)."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    post_id: int = Field(index=True, foreign_key="post.id")
+    slug: str = Field(index=True)
+    title: Optional[str] = None
+    weekday: Optional[str] = Field(default=None, index=True)
+    day_theme: Optional[str] = Field(default=None, index=True)
+    device: str = Field(default="unknown", index=True)  # mobile | tablet | desktop | unknown
+    surface: str = Field(default="intro", index=True)  # intro | read
+    session_id: Optional[str] = Field(default=None, index=True)
+    created_at: datetime = Field(default_factory=_utc_now, index=True)
+

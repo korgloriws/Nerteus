@@ -4,7 +4,7 @@ from sqlmodel import SQLModel
 
 from .config import get_settings
 from .db import engine, ensure_columns
-from .routes import auth, comments, media, posts, products
+from .routes import analytics, auth, comments, media, posts, products
 
 
 def create_app() -> FastAPI:
@@ -33,6 +33,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth.router)
     app.include_router(posts.router)
+    app.include_router(analytics.router)
     app.include_router(products.router)
     app.include_router(comments.router)
     app.include_router(media.router)
