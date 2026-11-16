@@ -146,6 +146,45 @@ export function SiteNav() {
             })}
           </nav>
 
+          {/* Temas na mesma linha — cabeçalho de um andar */}
+          {showWeekStrip && (
+            <nav
+              className="ml-2 hidden min-w-0 items-center gap-0.5 lg:flex"
+              aria-label="Temas da semana"
+            >
+              <span className="mx-1 h-4 w-px shrink-0 bg-border" aria-hidden />
+              {WEEKDAYS.map((day) => {
+                const href = `/dia/${day.slug}`;
+                const active = pathname === href;
+                const isToday = today === day.key;
+                return (
+                  <Link
+                    key={day.slug}
+                    href={href}
+                    title={day.theme}
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold transition ${
+                      active
+                        ? "bg-card text-foreground ring-1 ring-border"
+                        : "text-muted hover:bg-card/70 hover:text-foreground"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{
+                        backgroundColor: day.hex,
+                        ...(isToday ? { boxShadow: `0 0 0 1px ${day.hex}` } : {}),
+                      }}
+                      aria-hidden
+                    />
+                    {day.theme}
+                    {isToday ? <span className="sr-only">, hoje</span> : null}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
             <div className="hidden items-center gap-1.5 md:flex">
               <LanguageSwitcher />
@@ -200,46 +239,6 @@ export function SiteNav() {
             </button>
           </div>
         </div>
-
-        {/* Linha 2 (desktop): temas da semana — separado da navegação */}
-        {showWeekStrip && (
-          <div className="hidden border-t border-border bg-background lg:block">
-            <nav
-              className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 py-1.5"
-              aria-label="Temas da semana"
-            >
-              <span className="mr-2 shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                Temas
-              </span>
-              {WEEKDAYS.map((day) => {
-                const href = `/dia/${day.slug}`;
-                const active = pathname === href;
-                const isToday = today === day.key;
-                return (
-                  <Link
-                    key={day.slug}
-                    href={href}
-                    title={day.theme}
-                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
-                      active
-                        ? "bg-card text-foreground ring-1 ring-border"
-                        : "text-muted hover:bg-card/70 hover:text-foreground"
-                    }`}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${isToday ? "ring-2 ring-offset-1 ring-offset-background" : ""}`}
-                      style={{ backgroundColor: day.hex, ...(isToday ? { boxShadow: `0 0 0 1px ${day.hex}` } : {}) }}
-                      aria-hidden
-                    />
-                    {day.theme}
-                    {isToday ? <span className="sr-only">, hoje</span> : null}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
 
         {searchOpen && (
           <div className="border-t border-border bg-background">
@@ -329,7 +328,7 @@ export function SiteNav() {
               <section className="space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Preferências</p>
                 <div className="flex flex-wrap items-center gap-3">
-                  <LanguageSwitcher />
+                  <LanguageSwitcher align="left" />
                   {onReadingPost && <ThemeToggle />}
                 </div>
               </section>
