@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getApiUrl } from "../lib/api";
 import { getPublicSiteUrl } from "../lib/siteUrl";
-import { HomeContent, type PostCardData } from "./HomeContent";
+import { HomeContent, type HomeRanking, type PostCardData } from "./HomeContent";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,22 @@ async function getPosts(): Promise<PostCardData[]> {
   }
 }
 
+async function getHomeRanking(): Promise<HomeRanking | null> {
+  try {
+    const apiUrl = getApiUrl();
+    const res = await fetch(`${apiUrl}/analytics/ranking?limit=10`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return {
+      top_all_time: data.top_all_time || [],
+      top_month: data.top_month || [],
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default async function HomePage() {
-  const posts = await getPosts();
-  return <HomeContent posts={posts} />;
+  const [posts, ranking] = await Promise.all([getPosts(), getHomeRanking()]);
+  return <HomeContent posts={posts} ranking={ranking} />;
 }

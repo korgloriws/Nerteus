@@ -15,6 +15,38 @@ from .posts import _find_post_by_slug
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 
+def _top_posts_from_events(
+    session: Session,
+    *,
+    since: Optional[datetime] = None,
+    limit: int = 10,
+) -> list[dict]:
+    """Ranking limpo a partir de PostViewEvent (mesma fonte do painel)."""
+    statement = select(PostViewEvent).join(Post, Post.id == PostViewEvent.post_id).where(
+        Post.status == "published"
+    )
+    events = list(session.exec(statement).all())
+    if since is not None:
+        since_utc = _as_utc(since)
+        events = [e for e in events if _as_utc(e.created_at) >= since_utc]
+
+    counts: Counter[int] = Counter(e.post_id for e in events)
+    out: list[dict] = []
+    for post_id, views in counts.most_common(limit):
+        post = session.get(Post, post_id)
+        if not post or post.status != "published":
+            continue
+        out.append(
+            {
+                "post_id": post_id,
+                "views": int(views),
+                "slug": post.slug,
+                "title": post.title,
+            }
+        )
+    return out
+
+
 class ViewEventIn(BaseModel):
     slug: str
     surface: str = Field(default="intro")  # intro | read
@@ -68,6 +100,26 @@ def _period_range(
     else:
         start = now - timedelta(days=7)
     return start, end
+
+
+@router.get("/ranking")
+def public_home_ranking(
+    *,
+    session: Session = Depends(get_session),
+    limit: int = Query(10, ge=1, le=30),
+):
+    """
+    Ranking público da home — só acessos limpos (PostViewEvent).
+    - top_all_time: todos os eventos desde o início do analytics
+    - top_month: eventos nos últimos 30 dias
+    """
+    month_start = datetime.now(timezone.utc) - timedelta(days=30)
+    return {
+        "source": "post_view_event",
+        "top_all_time": _top_posts_from_events(session, limit=limit),
+        "top_month": _top_posts_from_events(session, since=month_start, limit=limit),
+        "month_start": month_start.isoformat(),
+    }
 
 
 @router.post("/view", status_code=status.HTTP_204_NO_CONTENT)

@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { BrandLogo } from "./BrandLogo";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { SocialIcons } from "./SocialLinks";
 import { ThemeToggle } from "./ThemeToggle";
 import { getApiUrl } from "../lib/api";
 import { WEEKDAYS } from "../lib/weekdays";
@@ -28,10 +29,10 @@ type SearchPost = {
   cover_url?: string | null;
 };
 
-const LINKS = [
+const PRIMARY_LINKS = [
   { href: "/", label: "Início", icon: HomeIcon },
   { href: "/loja", label: "Loja", icon: ShoppingBagIcon },
-  { href: "/admin", label: "Editor", icon: PencilSquareIcon },
+  { href: "/sobre", label: "Sobre", icon: null },
 ] as const;
 
 function isActive(pathname: string, href: string) {
@@ -46,6 +47,7 @@ export function SiteNav() {
   const onAdmin = pathname.startsWith("/admin");
   const onPost = pathname.startsWith("/posts/");
   const onReadingPost = onPost && searchParams.get("ler") === "1";
+  const showWeekStrip = !onAdmin;
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -85,16 +87,22 @@ export function SiteNav() {
   }, [searchOpen, catalog]);
 
   const results = useMemo(() => {
-    const normalized = (value: string) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const normalized = (value: string) =>
+      value
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
     const q = normalized(query.trim());
     if (q.length < 2) return [];
-    return (catalog || []).filter((post) => {
-      return (
-        normalized(post.title).includes(q) ||
-        normalized(post.summary || "").includes(q) ||
-        (post.tags || []).some((tag) => normalized(tag).includes(q))
-      );
-    }).slice(0, 12);
+    return (catalog || [])
+      .filter((post) => {
+        return (
+          normalized(post.title).includes(q) ||
+          normalized(post.summary || "").includes(q) ||
+          (post.tags || []).some((tag) => normalized(tag).includes(q))
+        );
+      })
+      .slice(0, 12);
   }, [catalog, query]);
 
   function openPost(slug: string) {
@@ -111,17 +119,24 @@ export function SiteNav() {
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-40 border-b border-border bg-background">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-3 sm:gap-3 sm:px-4">
+        {/* Linha 1: marca + navegação principal + ações */}
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-3 sm:px-4">
           <BrandLogo compact />
-          <nav className="ml-2 hidden min-w-0 items-center gap-1 md:flex" aria-label="Seções">
-            {LINKS.filter((link) => link.href !== "/admin").map((link) => {
+
+          <nav
+            className="ml-1 hidden items-center gap-0.5 md:flex"
+            aria-label="Navegação principal"
+          >
+            {PRIMARY_LINKS.map((link) => {
               const active = isActive(pathname, link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold ${
-                    active ? "bg-card text-foreground" : "text-muted hover:bg-card/70 hover:text-foreground"
+                  className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                    active
+                      ? "bg-card text-foreground"
+                      : "text-muted hover:bg-card/70 hover:text-foreground"
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
@@ -129,65 +144,55 @@ export function SiteNav() {
                 </Link>
               );
             })}
-            <span className="mx-1 hidden h-4 w-px shrink-0 bg-border lg:block" aria-hidden />
-            {WEEKDAYS.map((day) => {
-              const href = `/dia/${day.slug}`;
-              const active = pathname === href;
-              return (
-                <Link
-                  key={day.slug}
-                  href={href}
-                  title={day.theme}
-                  className={`hidden shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm font-semibold lg:inline-flex ${
-                    active ? "bg-card text-foreground" : "text-muted hover:bg-card/70 hover:text-foreground"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: day.hex }} aria-hidden />
-                  {day.theme}
-                  {today === day.key ? <span className="sr-only">, hoje</span> : null}
-                </Link>
-              );
-            })}
           </nav>
+
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+            <div className="hidden items-center gap-1.5 md:flex">
+              <LanguageSwitcher />
+              {onReadingPost && <ThemeToggle />}
+            </div>
+
+            <span className="mx-0.5 hidden h-5 w-px bg-border md:block" aria-hidden />
+
             <button
               type="button"
               onClick={() => {
                 setSearchOpen((open) => !open);
                 setMenuOpen(false);
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground hover:bg-card"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition sm:h-10 sm:w-10 ${
+                searchOpen
+                  ? "border-indigo-400 bg-indigo-600 text-white"
+                  : "border-indigo-500/40 bg-indigo-600/15 text-indigo-200 hover:border-indigo-400 hover:bg-indigo-600/25 hover:text-white"
+              }`}
               aria-label={searchOpen ? "Fechar busca" : "Buscar"}
               aria-expanded={searchOpen}
             >
               {searchOpen ? <XMarkIcon className="h-5 w-5" /> : <MagnifyingGlassIcon className="h-5 w-5" />}
             </button>
-            <div className="hidden items-center gap-2 md:flex">
-              <LanguageSwitcher />
-              {onReadingPost && <ThemeToggle />}
-              <Link
-                href="/sobre"
-                className="rounded-full px-3 py-1.5 text-sm font-semibold text-muted hover:bg-card/70 hover:text-foreground"
-              >
-                Sobre
-              </Link>
-              <Link
-                href="/admin"
-                className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
-                  onAdmin ? "bg-indigo-600 text-white" : "bg-indigo-600/90 text-white hover:bg-indigo-500"
-                }`}
-              >
-                Editor
-              </Link>
-            </div>
+
+            <Link
+              href="/admin"
+              className={`hidden rounded-lg px-3 py-1.5 text-sm font-semibold transition md:inline-flex ${
+                onAdmin
+                  ? "bg-indigo-600 text-white"
+                  : "bg-indigo-600/90 text-white hover:bg-indigo-500"
+              }`}
+            >
+              Editor
+            </Link>
+
+            <span className="mx-0.5 hidden h-5 w-px bg-border lg:block" aria-hidden />
+
+            <SocialIcons compact className="hidden lg:flex" branded />
+
             <button
               type="button"
               onClick={() => {
                 setMenuOpen((open) => !open);
                 setSearchOpen(false);
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground hover:bg-card md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-foreground hover:bg-card md:hidden"
               aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
               aria-expanded={menuOpen}
             >
@@ -195,6 +200,47 @@ export function SiteNav() {
             </button>
           </div>
         </div>
+
+        {/* Linha 2 (desktop): temas da semana — separado da navegação */}
+        {showWeekStrip && (
+          <div className="hidden border-t border-border bg-background lg:block">
+            <nav
+              className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 py-1.5"
+              aria-label="Temas da semana"
+            >
+              <span className="mr-2 shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+                Temas
+              </span>
+              {WEEKDAYS.map((day) => {
+                const href = `/dia/${day.slug}`;
+                const active = pathname === href;
+                const isToday = today === day.key;
+                return (
+                  <Link
+                    key={day.slug}
+                    href={href}
+                    title={day.theme}
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+                      active
+                        ? "bg-card text-foreground ring-1 ring-border"
+                        : "text-muted hover:bg-card/70 hover:text-foreground"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${isToday ? "ring-2 ring-offset-1 ring-offset-background" : ""}`}
+                      style={{ backgroundColor: day.hex, ...(isToday ? { boxShadow: `0 0 0 1px ${day.hex}` } : {}) }}
+                      aria-hidden
+                    />
+                    {day.theme}
+                    {isToday ? <span className="sr-only">, hoje</span> : null}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+
         {searchOpen && (
           <div className="border-t border-border bg-background">
             <form onSubmit={onSearch} className="mx-auto max-w-6xl px-3 py-3 sm:px-4">
@@ -232,61 +278,87 @@ export function SiteNav() {
             </div>
           </div>
         )}
+
         {menuOpen && (
-          <div className="border-t border-border bg-background px-3 py-3 md:hidden">
-            <div className="mx-auto flex max-w-6xl flex-col gap-3">
-              <div className="grid grid-cols-3 gap-2" aria-label="Navegação">
-                {LINKS.map((link) => {
-                  const active = isActive(pathname, link.href);
-                  const Icon = link.icon;
-                  const isEditor = link.href === "/admin";
-                  return (
+          <div className="border-t border-border bg-background px-3 py-4 md:hidden">
+            <div className="mx-auto flex max-w-6xl flex-col gap-5">
+              <section className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Navegar</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PRIMARY_LINKS.map((link) => {
+                    const active = isActive(pathname, link.href);
+                    const Icon = "icon" in link ? link.icon : null;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-2 rounded-2xl border px-3 py-3 text-sm font-semibold ${
+                          active
+                            ? "border-foreground/20 bg-card text-foreground"
+                            : "border-border bg-card/50 text-muted"
+                        }`}
+                        aria-current={active ? "page" : undefined}
+                      >
+                        {Icon ? <Icon className="h-5 w-5 shrink-0" /> : null}
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                  <Link
+                    href="/admin"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-2 rounded-2xl border px-3 py-3 text-sm font-semibold ${
+                      onAdmin
+                        ? "border-indigo-500 bg-indigo-600 text-white"
+                        : "border-indigo-500/40 bg-indigo-600/15 text-indigo-200"
+                    }`}
+                    aria-current={onAdmin ? "page" : undefined}
+                  >
+                    <PencilSquareIcon className="h-5 w-5 shrink-0" />
+                    Editor
+                  </Link>
+                </div>
+              </section>
+
+              <section className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Redes</p>
+                <SocialIcons />
+              </section>
+
+              <section className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Preferências</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <LanguageSwitcher />
+                  {onReadingPost && <ThemeToggle />}
+                </div>
+              </section>
+
+              <section className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Legal</p>
+                <div className="flex flex-wrap gap-2">
+                  {LEGAL_LINKS.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
                       onClick={() => setMenuOpen(false)}
-                      className={`flex flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-3 text-xs font-semibold ${
-                        isEditor
-                          ? active
-                            ? "border-indigo-500 bg-indigo-600 text-white"
-                            : "border-indigo-500/40 bg-indigo-600/20 text-indigo-200"
-                          : active
-                            ? "border-foreground/20 bg-card text-foreground"
-                            : "border-border bg-card/60 text-muted"
-                      }`}
-                      aria-current={active ? "page" : undefined}
+                      className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted hover:text-foreground"
                     >
-                      <Icon className="h-5 w-5" />
                       {link.label}
                     </Link>
-                  );
-                })}
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <LanguageSwitcher />
-                {onReadingPost && <ThemeToggle />}
-              </div>
-              <div className="flex flex-wrap gap-2" aria-label="Informações do site">
-                {LEGAL_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-semibold text-muted hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </section>
             </div>
           </div>
         )}
       </header>
 
+      {/* Dock mobile: Início + temas (não mistura com o topo) */}
       <nav
         className="fixed inset-x-3 z-40 lg:hidden"
         style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-        aria-label="Início e faixas da semana"
+        aria-label="Início e temas da semana"
       >
         <div className="mx-auto max-w-md overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-[0_12px_32px_rgba(0,0,0,0.45)]">
           <div className="grid grid-cols-6 px-1.5 py-2">

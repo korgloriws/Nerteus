@@ -15,6 +15,7 @@ import { ProductCard, type AffiliateProduct } from "./ProductCard";
 import { CommentSection } from "./CommentSection";
 import { AdSlot } from "./AdSlot";
 import { PostViewBeacon } from "./PostViewBeacon";
+import { SocialFollowCallout } from "./SocialLinks";
 import { classifyProgress, getReadingEntry } from "../lib/readingProgress";
 import { resolveColor } from "../lib/themeColor";
 
@@ -156,6 +157,7 @@ export function PostExperience({
                 <div className="min-w-0 pt-2">
                   <PostTasteBar postId={post.id} slug={post.slug} tone="on-dark" />
                 </div>
+                <SocialFollowCallout tone="on-dark" className="mt-3 max-w-xl" />
               </div>
             </div>
           </div>
@@ -195,6 +197,7 @@ export function PostExperience({
             ))}
           </div>
         </div>
+        <SocialFollowCallout />
         {children}
       </article>
 

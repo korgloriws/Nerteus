@@ -31,8 +31,21 @@ export type PostCardData = {
   day_theme?: string | null;
 };
 
+export type RankingEntry = {
+  post_id: number;
+  views: number;
+  slug?: string;
+  title?: string;
+};
+
+export type HomeRanking = {
+  top_all_time: RankingEntry[];
+  top_month: RankingEntry[];
+};
+
 type Props = {
   posts: PostCardData[];
+  ranking?: HomeRanking | null;
 };
 
 function cardToTileProps(card: PostCardData): PostTileProps & { created_at: string; views?: number; weekday?: string | null; day_theme?: string | null } {
@@ -56,7 +69,19 @@ const WEEKDAY_SECTION: Record<string, string> = Object.fromEntries(
 
 type TileData = PostTileProps & { created_at: string; views?: number; weekday?: string | null; day_theme?: string | null };
 
-function groupSections(cards: PostCardData[]) {
+function orderByAnalyticsRanking(posts: TileData[], ranked: RankingEntry[]): TileData[] {
+  const byId = new Map(posts.map((p) => [p.id, p]));
+  const out: TileData[] = [];
+  for (const row of ranked) {
+    const post = byId.get(row.post_id);
+    if (!post) continue;
+    // views = contagem limpa do analytics (não o contador antigo)
+    out.push({ ...post, views: row.views });
+  }
+  return out;
+}
+
+function groupSections(cards: PostCardData[], ranking?: HomeRanking | null) {
   const posts = cards.map(cardToTileProps);
   const seed = hourSeed();
   const byViews = sortByViewsDesc(posts);
@@ -65,21 +90,14 @@ function groupSections(cards: PostCardData[]) {
   // Hero: o que está acelerando (não o Top 10 puro)
   const hero = takeUnique([byTrending, byViews], 5);
 
-  const now = Date.now();
-  const last30 = now - 30 * 24 * 60 * 60 * 1000;
-
-  // Top 10: ranking duro all-time (única faixa “oficial” por views absolutas)
-  const top10 = byViews.filter((p) => (p.views ?? 0) > 0).slice(0, 10);
+  // Top 10 eterno + mês: só acessos limpos (PostViewEvent / painel Analytics)
+  const top10 = orderByAnalyticsRanking(posts, ranking?.top_all_time || []).slice(0, 10);
+  const top10Month = orderByAnalyticsRanking(posts, ranking?.top_month || []).slice(0, 10);
 
   // Em alta: velocidade (views/idade) — ordem diferente do Top 10
   const trending = byTrending
     .filter((p) => (p.views ?? 0) > 0 || ageDaysSafe(p.created_at) <= 21)
     .slice(0, 15);
-
-  // Top do mês: só criados nos últimos 30 dias, por views
-  const top10Month = sortByViewsDesc(
-    posts.filter((p) => new Date(p.created_at).getTime() >= last30)
-  ).slice(0, 10);
 
   // Novos: só ordem de publicação (mais recente → mais antigo)
   const newest = sortByNewest(posts).slice(0, 18);
@@ -170,8 +188,8 @@ function ageDaysSafe(createdAt: string) {
   return Math.max(1, (Date.now() - new Date(createdAt).getTime()) / (24 * 60 * 60 * 1000));
 }
 
-export function HomeContent({ posts }: Props) {
-  const { hero, sections, all } = groupSections(posts);
+export function HomeContent({ posts, ranking }: Props) {
+  const { hero, sections, all } = groupSections(posts, ranking);
   const [visibleSections, setVisibleSections] = useState(5);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [history, setHistory] = useState<ReadingEntry[]>([]);
