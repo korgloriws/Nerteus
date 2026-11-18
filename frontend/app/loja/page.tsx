@@ -22,13 +22,13 @@ export default async function LojaPage() {
   const hasProducts = products.length > 0;
 
   return (
-    <main className="space-y-6 text-foreground sm:space-y-8 min-w-0">
-      <div className="space-y-3">
+    <main className="min-w-0 space-y-5 text-foreground sm:space-y-8">
+      <div className="min-w-0 space-y-3">
         <BackButton label="Voltar" />
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.3em] text-muted">Afiliados</p>
           <h1 className="fluid-h1 font-bold">Loja</h1>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 max-w-2xl text-sm text-muted">
             {hasProducts
               ? "Produtos selecionados. Ao clicar, você vai para o Mercado Livre e parceiros."
               : "Estamos preparando as primeiras ofertas."}
@@ -37,13 +37,13 @@ export default async function LojaPage() {
       </div>
 
       {hasProducts ? (
-        <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
-        <section className="relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-14 text-center sm:px-10 sm:py-20">
+        <section className="relative overflow-hidden rounded-2xl border border-border bg-card px-4 py-12 text-center sm:rounded-3xl sm:px-10 sm:py-20">
           <div
             className="pointer-events-none absolute inset-0 opacity-40"
             style={{
@@ -52,9 +52,9 @@ export default async function LojaPage() {
             }}
             aria-hidden
           />
-          <div className="relative mx-auto max-w-md space-y-3">
+          <div className="relative mx-auto max-w-md space-y-3 px-1">
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-muted">Loja Nerteus</p>
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">Em breve</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-4xl">Em breve</h2>
             <p className="text-sm leading-relaxed text-muted sm:text-base">
               Ainda não há produtos publicados. Assim que uma oferta for liberada, ela aparece aqui
               automaticamente.

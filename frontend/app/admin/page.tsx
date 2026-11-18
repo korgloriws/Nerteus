@@ -555,7 +555,7 @@ export default function AdminPage() {
   ];
 
   return (
-    <main className="space-y-8 admin-surface">
+    <main className="admin-surface min-w-0 space-y-8 overflow-x-hidden">
       <BackButton label="Voltar ao início" />
       {!token && (
         <section className="bg-card border border-border rounded-xl p-6 space-y-4 text-foreground">
@@ -589,12 +589,12 @@ export default function AdminPage() {
 
       {token && (
         <>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex gap-2">
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => setView("editor")}
-                className={`rounded px-4 py-2 text-sm font-semibold ${
+                className={`rounded px-3 py-2 text-sm font-semibold sm:px-4 ${
                   view === "editor" ? "bg-indigo-600 text-white" : "bg-border text-foreground hover:bg-border/80"
                 }`}
               >
@@ -606,7 +606,7 @@ export default function AdminPage() {
                   setView("lista");
                   void loadPosts(page);
                 }}
-                className={`rounded px-4 py-2 text-sm font-semibold ${
+                className={`rounded px-3 py-2 text-sm font-semibold sm:px-4 ${
                   view === "lista" ? "bg-indigo-600 text-white" : "bg-border text-foreground hover:bg-border/80"
                 }`}
               >
@@ -615,7 +615,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => setView("loja")}
-                className={`rounded px-4 py-2 text-sm font-semibold ${
+                className={`rounded px-3 py-2 text-sm font-semibold sm:px-4 ${
                   view === "loja" ? "bg-indigo-600 text-white" : "bg-border text-foreground hover:bg-border/80"
                 }`}
               >
@@ -624,7 +624,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => setView("analytics")}
-                className={`rounded px-4 py-2 text-sm font-semibold ${
+                className={`rounded px-3 py-2 text-sm font-semibold sm:px-4 ${
                   view === "analytics" ? "bg-indigo-600 text-white" : "bg-border text-foreground hover:bg-border/80"
                 }`}
               >
@@ -633,7 +633,7 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={newPost}
-                className="rounded px-4 py-2 text-sm font-semibold bg-border text-foreground hover:bg-border/80"
+                className="rounded bg-border px-3 py-2 text-sm font-semibold text-foreground hover:bg-border/80 sm:px-4"
               >
                 Novo
               </button>
@@ -641,7 +641,7 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="text-sm text-indigo-300 hover:text-white"
+              className="self-start text-sm text-indigo-300 hover:text-white sm:self-auto"
             >
               Sair
             </button>

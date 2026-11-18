@@ -213,12 +213,16 @@ export function AdminProducts({ token }: Props) {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="bg-card border border-border rounded-xl p-6 space-y-4 text-foreground">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold">{editingId ? "Editar produto" : "Novo produto afiliado"}</h2>
-            <p className="text-sm text-muted">Cole o link (ex.: meli.la), busque os dados e ajuste o que quiser.</p>
+    <div className="grid min-w-0 gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-8">
+      <section className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-4 text-foreground sm:p-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold sm:text-xl">
+              {editingId ? "Editar produto" : "Novo produto afiliado"}
+            </h2>
+            <p className="text-sm text-muted">
+              Cole o link (ex.: meli.la), busque os dados e ajuste o que quiser.
+            </p>
           </div>
           {editingId && (
             <button
@@ -228,19 +232,19 @@ export function AdminProducts({ token }: Props) {
                 setForm(emptyForm);
                 setMessage(null);
               }}
-              className="text-sm text-muted hover:text-foreground"
+              className="shrink-0 self-start text-sm text-muted hover:text-foreground"
             >
               Cancelar
             </button>
           )}
         </div>
 
-        <form onSubmit={handleSave} className="grid gap-3">
-          <label className="grid gap-1">
+        <form onSubmit={handleSave} className="grid min-w-0 gap-3">
+          <label className="grid min-w-0 gap-1">
             <span className="text-sm text-muted">Link afiliado</span>
-            <div className="flex gap-2">
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
               <input
-                className="flex-1 bg-card border border-border rounded px-3 py-2"
+                className="min-w-0 w-full flex-1 rounded border border-border bg-card px-3 py-2"
                 placeholder="https://meli.la/2k3f1fF"
                 value={form.affiliate_url}
                 onChange={(e) => updateField("affiliate_url", e.target.value)}
@@ -249,55 +253,55 @@ export function AdminProducts({ token }: Props) {
                 type="button"
                 onClick={handlePreview}
                 disabled={previewLoading}
-                className="rounded px-3 py-2 text-sm font-semibold bg-amber-600 hover:bg-amber-500 text-white disabled:opacity-60 whitespace-nowrap"
+                className="w-full shrink-0 rounded px-3 py-2 text-sm font-semibold bg-amber-600 hover:bg-amber-500 text-white disabled:opacity-60 sm:w-auto"
               >
                 {previewLoading ? "Buscando..." : "Preencher"}
               </button>
             </div>
           </label>
 
-          <label className="grid gap-1">
+          <label className="grid min-w-0 gap-1">
             <span className="text-sm text-muted">Nome</span>
             <input
-              className="bg-card border border-border rounded px-3 py-2"
+              className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
               value={form.name}
               onChange={(e) => updateField("name", e.target.value)}
               required
             />
           </label>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="grid gap-1">
+          <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
+            <label className="grid min-w-0 gap-1">
               <span className="text-sm text-muted">Preço</span>
               <input
-                className="bg-card border border-border rounded px-3 py-2"
+                className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
                 placeholder="R$ 199,90"
                 value={form.price}
                 onChange={(e) => updateField("price", e.target.value)}
               />
             </label>
-            <label className="grid gap-1">
+            <label className="grid min-w-0 gap-1">
               <span className="text-sm text-muted">Tamanho</span>
               <input
-                className="bg-card border border-border rounded px-3 py-2"
+                className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
                 value={form.size}
                 onChange={(e) => updateField("size", e.target.value)}
               />
             </label>
-            <label className="grid gap-1">
+            <label className="grid min-w-0 gap-1">
               <span className="text-sm text-muted">Cor</span>
               <input
-                className="bg-card border border-border rounded px-3 py-2"
+                className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
                 value={form.color}
                 onChange={(e) => updateField("color", e.target.value)}
               />
             </label>
           </div>
 
-          <label className="grid gap-1">
+          <label className="grid min-w-0 gap-1">
             <span className="text-sm text-muted">Foto (URL ou upload)</span>
             <input
-              className="bg-card border border-border rounded px-3 py-2"
+              className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
               value={form.image}
               onChange={(e) => updateField("image", e.target.value)}
               placeholder="https://..."
@@ -306,24 +310,33 @@ export function AdminProducts({ token }: Props) {
               ref={imageFileRef}
               type="file"
               accept="image/*"
-              className="text-sm text-muted"
+              className="max-w-full text-sm text-muted"
               onChange={(e) => onImageFile(e.target.files?.[0] || null)}
             />
+            {form.image ? (
+              <div className="mt-1 flex items-center gap-3">
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-border/30">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form.image} alt="" className="h-full w-full object-contain" />
+                </div>
+                <span className="text-xs text-muted">Prévia da imagem buscada no link</span>
+              </div>
+            ) : null}
           </label>
 
-          <label className="grid gap-1">
+          <label className="grid min-w-0 gap-1">
             <span className="text-sm text-muted">Descrição</span>
             <textarea
-              className="bg-card border border-border rounded px-3 py-2 min-h-[80px]"
+              className="min-h-[80px] min-w-0 w-full rounded border border-border bg-card px-3 py-2"
               value={form.description}
               onChange={(e) => updateField("description", e.target.value)}
             />
           </label>
 
-          <label className="grid gap-1">
+          <label className="grid min-w-0 gap-1">
             <span className="text-sm text-muted">Cupom de desconto</span>
             <input
-              className="bg-card border border-border rounded px-3 py-2"
+              className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
               placeholder="NERTEUS10"
               value={form.coupon}
               onChange={(e) => updateField("coupon", e.target.value)}
@@ -331,33 +344,34 @@ export function AdminProducts({ token }: Props) {
           </label>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="grid gap-1">
+            <label className="grid min-w-0 gap-1">
               <span className="text-sm text-muted">Validade (dias)</span>
               <input
                 type="number"
                 min={0}
-                className="bg-card border border-border rounded px-3 py-2 disabled:opacity-50"
+                className="min-w-0 w-full rounded border border-border bg-card px-3 py-2 disabled:opacity-50"
                 value={form.validity_days}
                 disabled={form.never_expires}
                 onChange={(e) => updateField("validity_days", e.target.value)}
               />
               <span className="text-[11px] text-muted">Padrão: 30 dias. Depois some da loja.</span>
             </label>
-            <label className="flex items-center gap-2 pt-6">
+            <label className="flex items-start gap-2 pt-1 sm:items-center sm:pt-6">
               <input
                 type="checkbox"
+                className="mt-1 shrink-0 sm:mt-0"
                 checked={form.never_expires}
                 onChange={(e) => updateField("never_expires", e.target.checked)}
               />
-              <span className="text-sm">Não expira nunca (livros / itens eternos)</span>
+              <span className="text-sm leading-snug">Não expira nunca (livros / itens eternos)</span>
             </label>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="grid gap-1">
+            <label className="grid min-w-0 gap-1">
               <span className="text-sm text-muted">Vincular a um post</span>
               <select
-                className="bg-card border border-border rounded px-3 py-2"
+                className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
                 value={form.post_id}
                 onChange={(e) => updateField("post_id", e.target.value)}
               >
@@ -369,10 +383,10 @@ export function AdminProducts({ token }: Props) {
                 ))}
               </select>
             </label>
-            <label className="grid gap-1">
+            <label className="grid min-w-0 gap-1">
               <span className="text-sm text-muted">Status</span>
               <select
-                className="bg-card border border-border rounded px-3 py-2"
+                className="min-w-0 w-full rounded border border-border bg-card px-3 py-2"
                 value={form.status}
                 onChange={(e) => updateField("status", e.target.value as "active" | "inactive")}
               >
@@ -385,33 +399,33 @@ export function AdminProducts({ token }: Props) {
           <button
             type="submit"
             disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white rounded px-4 py-2 font-semibold"
+            className="w-full rounded bg-indigo-600 px-4 py-2.5 font-semibold text-white hover:bg-indigo-500 disabled:opacity-60 sm:w-auto"
           >
             {loading ? "Salvando..." : editingId ? "Atualizar produto" : "Cadastrar produto"}
           </button>
-          {message && <p className="text-sm text-muted">{message}</p>}
+          {message && <p className="break-words text-sm text-muted">{message}</p>}
         </form>
       </section>
 
-      <section className="bg-card border border-border rounded-xl p-6 space-y-4 text-foreground">
-        <h2 className="text-xl font-semibold">Produtos cadastrados</h2>
+      <section className="min-w-0 space-y-4 rounded-xl border border-border bg-card p-4 text-foreground sm:p-6">
+        <h2 className="text-lg font-semibold sm:text-xl">Produtos cadastrados</h2>
         {!products.length && <p className="text-sm text-muted">Nenhum produto ainda.</p>}
-        <ul className="space-y-3 max-h-[70vh] overflow-y-auto">
+        <ul className="max-h-[70vh] space-y-3 overflow-y-auto overflow-x-hidden">
           {products.map((p) => (
-            <li key={p.id} className="border border-border rounded-lg p-3 flex gap-3">
-              <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded bg-border/40">
+            <li key={p.id} className="flex min-w-0 gap-3 rounded-lg border border-border p-3">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded bg-border/40 sm:h-16 sm:w-16">
                 {p.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={p.image} alt="" className="h-full w-full object-cover" />
                 ) : null}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm line-clamp-1">{p.name}</p>
-                <p className="text-xs text-muted">
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 break-words text-sm font-semibold">{p.name}</p>
+                <p className="break-words text-xs text-muted">
                   {p.price || "Sem preço"} · {formatExpiry(p)}
                   {p.coupon ? ` · Cupom ${p.coupon}` : ""}
                 </p>
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex flex-wrap gap-3">
                   <button type="button" onClick={() => startEdit(p)} className="text-xs text-primary hover:underline">
                     Editar
                   </button>

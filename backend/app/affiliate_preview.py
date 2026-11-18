@@ -15,9 +15,18 @@ USER_AGENT = (
     "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
 )
 
+# Ex.: R$ 2.963 | R$ 2.963,90 | R$2963,00
+_PRICE_RE = re.compile(
+    r"R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?|\bR\$\s*\d+(?:,\d{2})?",
+    re.IGNORECASE,
+)
+_PRICE_TAIL_RE = re.compile(
+    r"\s*[-–—|·]\s*R\$\s*\d{1,3}(?:\.\d{3})*(?:,\d{2})?\s*$",
+    re.IGNORECASE,
+)
+
 
 def _meta_content(html: str, prop: str) -> Optional[str]:
-    # og:title / twitter:title / name="description"
     patterns = [
         rf'<meta[^>]+(?:property|name)=["\']{re.escape(prop)}["\'][^>]+content=["\']([^"\']+)["\']',
         rf'<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\']{re.escape(prop)}["\']',
@@ -44,21 +53,63 @@ def _json_ld_price(html: str) -> Optional[str]:
         for item in items:
             if not isinstance(item, dict):
                 continue
+            # Só confia em Product / Offer tipados — páginas sociais misturam vários preços
+            type_name = item.get("@type") or ""
+            types = type_name if isinstance(type_name, list) else [type_name]
+            types_l = {str(t).lower() for t in types}
             offers = item.get("offers")
             if isinstance(offers, list) and offers:
                 offers = offers[0]
-            if isinstance(offers, dict):
+            if isinstance(offers, dict) and (
+                types_l & {"product", "productgroup", "offer"} or item.get("name")
+            ):
                 price = offers.get("price") or offers.get("lowPrice")
-                currency = offers.get("priceCurrency") or "BRL"
                 if price is not None:
-                    try:
-                        value = float(str(price).replace(",", "."))
-                        return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-                    except Exception:
-                        return f"{currency} {price}"
-            if item.get("price"):
-                return str(item["price"])
+                    return _format_brl(price)
+            if item.get("price") and types_l & {"product", "offer"}:
+                return _format_brl(item["price"])
     return None
+
+
+def _format_brl(price) -> str:
+    try:
+        value = float(str(price).replace(",", "."))
+        return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
+        text = str(price).strip()
+        if text.upper().startswith("R$"):
+            return text
+        return f"R$ {text}"
+
+
+def _extract_price_from_text(*parts: Optional[str]) -> Optional[str]:
+    for part in parts:
+        if not part:
+            continue
+        match = _PRICE_RE.search(part)
+        if match:
+            raw = match.group(0)
+            # normaliza espaços: "R$2.963" -> "R$ 2.963"
+            return re.sub(r"^R\$\s*", "R$ ", raw, flags=re.IGNORECASE).strip()
+    return None
+
+
+def _strip_price_from_text(text: Optional[str]) -> Optional[str]:
+    if not text:
+        return text
+    cleaned = _PRICE_TAIL_RE.sub("", text).strip()
+    cleaned = _PRICE_RE.sub("", cleaned)
+    cleaned = re.sub(r"\s{2,}", " ", cleaned)
+    cleaned = re.sub(r"\s*[-–—|·]\s*$", "", cleaned).strip(" -–—|·")
+    return cleaned or text
+
+
+def _prefer_image(url: Optional[str]) -> Optional[str]:
+    """Mercado Livre: -P/-I são thumbs; -O costuma ser maior."""
+    if not url:
+        return url
+    upgraded = re.sub(r"-(P|I)\.(webp|jpe?g|png)(\?.*)?$", r"-O.\2", url, flags=re.IGNORECASE)
+    return upgraded
 
 
 def fetch_affiliate_preview(url: str) -> dict:
@@ -86,7 +137,6 @@ def fetch_affiliate_preview(url: str) -> dict:
             raw = resp.read(900_000)
             html = raw.decode(charset, errors="ignore")
     except HTTPError as exc:
-        # Alguns sites bloqueiam bots; ainda assim pode haver HTML no body
         raw = exc.read(900_000) if exc.fp else b""
         html = raw.decode("utf-8", errors="ignore")
         resolved = exc.url or cleaned
@@ -104,13 +154,35 @@ def fetch_affiliate_preview(url: str) -> dict:
     if name:
         name = unescape(re.sub(r"\s+", " ", name)).strip()
 
-    image = _meta_content(html, "og:image") or _meta_content(html, "twitter:image")
+    image = _prefer_image(
+        _meta_content(html, "og:image") or _meta_content(html, "twitter:image")
+    )
     description = _meta_content(html, "og:description") or _meta_content(html, "description")
-    price = _json_ld_price(html) or _meta_content(html, "product:price:amount")
+    if description:
+        description = unescape(re.sub(r"\s+", " ", description)).strip()
+
+    # 1) JSON-LD / meta product  2) preço embutido no título (comum no share do ML)
+    price = (
+        _json_ld_price(html)
+        or _meta_content(html, "product:price:amount")
+        or _extract_price_from_text(name, description)
+    )
+    if price and not str(price).upper().startswith("R$"):
+        # meta product:price:amount às vezes vem só o número
+        amount_meta = _meta_content(html, "product:price:amount")
+        if amount_meta and str(price) == amount_meta:
+            price = _format_brl(price)
+
+    if name:
+        name = _strip_price_from_text(name)
+    if description:
+        description = _strip_price_from_text(description)
 
     note = None
     if not name and not image:
         note = "Não foi possível extrair metadados automaticamente. Preencha manualmente."
+    elif not price:
+        note = "Nome/imagem ok, mas o preço não veio separado — confira e ajuste se precisar."
 
     return {
         "name": name,

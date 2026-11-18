@@ -232,7 +232,7 @@ export function PostExperience({
               Ver loja →
             </Link>
           </div>
-          <div className="grid grid-cols-1 items-start gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
