@@ -190,8 +190,8 @@ function HourColumns({
   if (!hourly.some((h) => h.views > 0)) return <EmptyHint />;
 
   return (
-    <div className="relative pt-2">
-      <div className="flex items-end gap-[3px] h-36 px-0.5">
+    <div className="relative min-w-0 pt-2">
+      <div className="flex h-28 items-end gap-px px-0.5 sm:h-36 sm:gap-[3px]">
         {hourly.map((h) => {
           const pct = (h.views / max) * 100;
           const active = hover === h.hour;
@@ -199,7 +199,7 @@ function HourColumns({
             <button
               key={h.hour}
               type="button"
-              className="relative flex-1 h-full flex flex-col justify-end group outline-none"
+              className="group relative flex h-full min-w-0 flex-1 flex-col justify-end outline-none"
               onMouseEnter={() => setHover(h.hour)}
               onMouseLeave={() => setHover(null)}
               onFocus={() => setHover(h.hour)}
@@ -283,10 +283,10 @@ function LineChart({
   const { w, h, pts, line, area, length } = geometry;
 
   return (
-    <div className="relative overflow-x-auto" key={chartKey}>
+    <div className="relative min-w-0 w-full" key={chartKey}>
       <svg
         viewBox={`0 0 ${w} ${h}`}
-        className="w-full min-w-[320px] h-40"
+        className="h-36 w-full sm:h-40"
         role="img"
         aria-label="Views por dia"
         onMouseLeave={() => setHover(null)}
@@ -437,9 +437,9 @@ function DeviceDonut({
   });
 
   return (
-    <div className="flex items-center gap-5" key={chartKey}>
-      <div className="relative shrink-0">
-        <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90">
+    <div className="flex min-w-0 flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-5" key={chartKey}>
+      <div className="relative h-24 w-24 shrink-0 sm:h-[120px] sm:w-[120px]">
+        <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
           <circle cx="60" cy="60" r={r} fill="none" stroke="#1a1f2b" strokeWidth="14" />
           {segments.map((s, i) => (
             <circle
@@ -469,27 +469,27 @@ function DeviceDonut({
           </defs>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-lg font-semibold tabular-nums">{total}</span>
-          <span className="text-[10px] text-muted uppercase tracking-wide">views</span>
+          <span className="text-base font-semibold tabular-nums sm:text-lg">{total}</span>
+          <span className="text-[10px] uppercase tracking-wide text-muted">views</span>
         </div>
       </div>
-      <ul className="space-y-2 text-sm min-w-0 flex-1">
+      <ul className="w-full min-w-0 flex-1 space-y-2 text-sm">
         {devices.map((d, i) => (
           <li
             key={d.device}
-            className="flex items-center justify-between gap-2 ax-row"
+            className="ax-row flex items-center justify-between gap-2"
             style={{ animationDelay: `${120 + i * 60}ms` }}
           >
-            <span className="flex items-center gap-2 min-w-0">
+            <span className="flex min-w-0 items-center gap-2">
               <span
-                className="h-2.5 w-2.5 rounded-full shrink-0"
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ background: DEVICE_COLORS[d.device] || DEVICE_COLORS.unknown }}
               />
-              <span className="capitalize truncate">{d.device}</span>
+              <span className="truncate capitalize">{d.device}</span>
             </span>
-            <span className="tabular-nums text-muted">
+            <span className="shrink-0 tabular-nums text-muted">
               {d.views}
-              <span className="text-[10px] ml-1 opacity-70">
+              <span className="ml-1 text-[10px] opacity-70">
                 ({Math.round((d.views / total) * 100)}%)
               </span>
             </span>
@@ -586,8 +586,8 @@ export function AdminAnalytics({ token }: Props) {
   const chartKey = `${period}-${animKey}`;
 
   return (
-    <section className="force-card rounded-xl p-6 space-y-6 text-foreground relative overflow-hidden">
-      <div className="pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
+    <section className="force-card relative min-w-0 space-y-5 overflow-x-hidden rounded-xl p-4 text-foreground sm:space-y-6 sm:p-6">
+      <div className="pointer-events-none absolute -right-16 -top-24 h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -left-10 h-48 w-48 rounded-full bg-cyan-500/5 blur-3xl" />
 
       <style>{`
@@ -612,32 +612,32 @@ export function AdminAnalytics({ token }: Props) {
         }
       `}</style>
 
-      <div className="relative flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Analytics</h2>
-          <p className="text-sm text-muted mt-1">
-            Controle interno — só conta visitas a partir de agora. Home segue com Top 10 eterno e do mês.
+      <div className="relative flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold tracking-tight sm:text-xl">Analytics</h2>
+          <p className="mt-1 text-sm text-muted">
+            Controle interno — visitas limpas. Home segue com Top 10 eterno e do mês.
           </p>
         </div>
         <button
           type="button"
           onClick={() => void load()}
           disabled={loading}
-          className="rounded-lg px-3 py-2 text-sm font-semibold bg-border text-foreground hover:bg-border/80 disabled:opacity-50 transition-transform active:scale-[0.98]"
+          className="w-full rounded-lg bg-border px-3 py-2 text-sm font-semibold text-foreground transition-transform hover:bg-border/80 active:scale-[0.98] disabled:opacity-50 sm:w-auto"
         >
           {loading ? "Atualizando..." : "Atualizar"}
         </button>
       </div>
 
-      <div className="relative flex flex-wrap gap-2 items-center">
+      <div className="relative flex min-w-0 flex-wrap items-center gap-2">
         {PERIODS.map((p) => (
           <button
             key={p.id}
             type="button"
             onClick={() => setPeriod(p.id)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${
+            className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all duration-200 sm:px-3 sm:text-sm ${
               period === p.id
-                ? "bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.35)] scale-[1.02]"
+                ? "bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.35)]"
                 : "bg-border text-foreground hover:bg-border/80"
             }`}
           >
@@ -645,37 +645,37 @@ export function AdminAnalytics({ token }: Props) {
           </button>
         ))}
         {period === "custom" && (
-          <div className="flex flex-wrap gap-2 items-center ax-fade">
+          <div className="ax-fade flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="rounded-lg border border-[#1f2430] bg-transparent px-2 py-1 text-sm"
+              className="min-w-0 w-full rounded-lg border border-[#1f2430] bg-transparent px-2 py-1.5 text-sm sm:w-auto"
             />
-            <span className="text-muted text-sm">até</span>
+            <span className="hidden text-sm text-muted sm:inline">até</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="rounded-lg border border-[#1f2430] bg-transparent px-2 py-1 text-sm"
+              className="min-w-0 w-full rounded-lg border border-[#1f2430] bg-transparent px-2 py-1.5 text-sm sm:w-auto"
             />
           </div>
         )}
       </div>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="break-words text-sm text-red-400">{error}</p>}
 
       {loading && !data && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-24 rounded-xl border border-[#1f2430] bg-[#12151c] animate-pulse" />
+            <div key={i} className="h-20 rounded-xl border border-[#1f2430] bg-[#12151c] animate-pulse sm:h-24" />
           ))}
         </div>
       )}
 
       {data && (
         <>
-          <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
             <Stat label="Views (período)" value={data.totals.views} active animDelay={0} />
             <Stat label="Sessões únicas" value={data.totals.unique_sessions} active animDelay={60} />
             <Stat label="Posts tocados" value={data.totals.unique_posts} active animDelay={120} />
@@ -688,13 +688,13 @@ export function AdminAnalytics({ token }: Props) {
             />
           </div>
 
-          <div className="relative grid gap-3 sm:grid-cols-3 text-sm">
+          <div className="relative grid gap-2 text-sm sm:grid-cols-3 sm:gap-3">
             <InfoChip label="Topo device" value={data.totals.top_device || "—"} delay={200} />
             <InfoChip label="Topo tema" value={data.totals.top_theme || "—"} delay={260} />
             <InfoChip label="Intro → Ler" value={`${introViews} → ${readViews}`} delay={320} />
           </div>
 
-          <div className="relative grid gap-6 lg:grid-cols-2">
+          <div className="relative grid min-w-0 gap-4 sm:gap-6 lg:grid-cols-2">
             <Panel title="Views por dia" delay={0}>
               <LineChart
                 chartKey={chartKey}
@@ -723,20 +723,22 @@ export function AdminAnalytics({ token }: Props) {
               {!data.top_posts.length ? (
                 <EmptyHint />
               ) : (
-                <ol className="space-y-2 text-sm">
+                <ol className="min-w-0 space-y-2 text-sm">
                   {data.top_posts.slice(0, 10).map((p, i) => (
                     <li
                       key={p.post_id}
-                      className="flex gap-2 justify-between border-b border-[#1f2430] pb-2 ax-row group"
+                      className="ax-row group flex min-w-0 items-start justify-between gap-2 border-b border-[#1f2430] pb-2"
                       style={{ animationDelay: `${i * 45}ms` }}
                     >
-                      <span className="min-w-0 truncate">
-                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-indigo-500/15 text-[11px] text-indigo-300 mr-2 tabular-nums">
+                      <span className="flex min-w-0 items-start gap-2">
+                        <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-indigo-500/15 text-[11px] tabular-nums text-indigo-300">
                           {i + 1}
                         </span>
-                        <span className="group-hover:text-indigo-200 transition-colors">{p.title}</span>
+                        <span className="min-w-0 break-words group-hover:text-indigo-200 transition-colors">
+                          {p.title}
+                        </span>
                       </span>
-                      <span className="tabular-nums text-muted shrink-0 font-medium">{p.views}</span>
+                      <span className="shrink-0 font-medium tabular-nums text-muted">{p.views}</span>
                     </li>
                   ))}
                 </ol>
@@ -744,40 +746,61 @@ export function AdminAnalytics({ token }: Props) {
             </Panel>
           </div>
 
-          <div className="relative grid gap-6 lg:grid-cols-2">
+          <div className="relative grid min-w-0 gap-4 sm:gap-6 lg:grid-cols-2">
             <Panel title="Período vs contador eterno (home)" delay={160}>
-              <p className="text-xs text-muted mb-3">
-                Compara views do filtro com o contador usado no Top 10 eterno — útil pra investigar ranking.
+              <p className="mb-3 text-xs text-muted">
+                Compara views do filtro com o contador do Top 10 eterno.
               </p>
               {!data.top_posts_with_lifetime.length ? (
                 <EmptyHint />
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-muted border-b border-[#1f2430]">
-                        <th className="py-2 pr-2 font-medium">Post</th>
-                        <th className="py-2 pr-2 font-medium text-right">Período</th>
-                        <th className="py-2 font-medium text-right">Eterno</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.top_posts_with_lifetime.map((p, i) => (
-                        <tr
-                          key={p.post_id}
-                          className="border-b border-[#1f2430]/40 hover:bg-indigo-500/5 transition-colors ax-row"
-                          style={{ animationDelay: `${i * 40}ms` }}
-                        >
-                          <td className="py-2 pr-2 max-w-[220px] truncate" title={p.title}>
-                            {p.title}
-                          </td>
-                          <td className="py-2 pr-2 text-right tabular-nums text-indigo-300">{p.views}</td>
-                          <td className="py-2 text-right tabular-nums text-muted">{p.lifetime_views}</td>
+                <>
+                  <div className="hidden overflow-x-auto sm:block">
+                    <table className="w-full min-w-0 text-sm">
+                      <thead>
+                        <tr className="border-b border-[#1f2430] text-left text-muted">
+                          <th className="py-2 pr-2 font-medium">Post</th>
+                          <th className="py-2 pr-2 text-right font-medium">Período</th>
+                          <th className="py-2 text-right font-medium">Eterno</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {data.top_posts_with_lifetime.map((p, i) => (
+                          <tr
+                            key={p.post_id}
+                            className="ax-row border-b border-[#1f2430]/40 transition-colors hover:bg-indigo-500/5"
+                            style={{ animationDelay: `${i * 40}ms` }}
+                          >
+                            <td className="max-w-[220px] truncate py-2 pr-2" title={p.title}>
+                              {p.title}
+                            </td>
+                            <td className="py-2 pr-2 text-right tabular-nums text-indigo-300">{p.views}</td>
+                            <td className="py-2 text-right tabular-nums text-muted">{p.lifetime_views}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <ul className="min-w-0 space-y-2 sm:hidden">
+                    {data.top_posts_with_lifetime.map((p, i) => (
+                      <li
+                        key={p.post_id}
+                        className="ax-row rounded-lg border border-[#1f2430] p-2.5"
+                        style={{ animationDelay: `${i * 40}ms` }}
+                      >
+                        <p className="break-words text-sm font-medium leading-snug">{p.title}</p>
+                        <div className="mt-1.5 flex justify-between gap-2 text-xs text-muted">
+                          <span>
+                            Período: <span className="tabular-nums text-indigo-300">{p.views}</span>
+                          </span>
+                          <span>
+                            Eterno: <span className="tabular-nums">{p.lifetime_views}</span>
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </Panel>
 
@@ -785,22 +808,22 @@ export function AdminAnalytics({ token }: Props) {
               {!data.theme_breakdown.length ? (
                 <EmptyHint />
               ) : (
-                <div className="grid gap-3">
+                <div className="grid min-w-0 gap-3">
                   {data.theme_breakdown.map((block, i) => (
                     <div
                       key={block.theme}
-                      className="rounded-xl border border-[#1f2430] bg-gradient-to-br from-indigo-500/[0.06] to-transparent p-3 ax-row hover:border-indigo-500/30 transition-colors"
+                      className="ax-row rounded-xl border border-[#1f2430] bg-gradient-to-br from-indigo-500/[0.06] to-transparent p-3 transition-colors hover:border-indigo-500/30"
                       style={{ animationDelay: `${i * 50}ms` }}
                     >
-                      <div className="flex justify-between gap-2 mb-2">
-                        <h4 className="font-medium truncate">{block.theme}</h4>
-                        <span className="text-indigo-300 tabular-nums shrink-0 font-semibold">{block.views}</span>
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <h4 className="min-w-0 break-words font-medium">{block.theme}</h4>
+                        <span className="shrink-0 font-semibold tabular-nums text-indigo-300">{block.views}</span>
                       </div>
                       <ul className="space-y-1 text-sm text-muted">
                         {block.posts.map((p) => (
-                          <li key={p.post_id} className="flex justify-between gap-2">
-                            <span className="truncate">{p.title}</span>
-                            <span className="tabular-nums shrink-0">{p.views}</span>
+                          <li key={p.post_id} className="flex min-w-0 items-start justify-between gap-2">
+                            <span className="min-w-0 break-words">{p.title}</span>
+                            <span className="shrink-0 tabular-nums">{p.views}</span>
                           </li>
                         ))}
                       </ul>
@@ -811,7 +834,7 @@ export function AdminAnalytics({ token }: Props) {
             </Panel>
           </div>
 
-          <p className="relative text-xs text-muted">
+          <p className="relative break-words text-xs text-muted">
             Janela: {new Date(data.start).toLocaleString()} → {new Date(data.end).toLocaleString()}
           </p>
         </>
@@ -822,7 +845,7 @@ export function AdminAnalytics({ token }: Props) {
       )}
 
       {data && data.totals.views === 0 && (
-        <p className="relative text-sm text-amber-300/90 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+        <p className="relative rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm text-amber-300/90">
           Zero views neste período. Abra um post no site (intro ou Ler), volte aqui e clique em Atualizar.
           Visitas antigas do contador eterno não entram neste painel.
         </p>
@@ -848,11 +871,11 @@ function Stat({
   const counted = useCountUp(numeric, active && !raw);
   return (
     <div
-      className="rounded-xl border border-[#1f2430] p-4 bg-gradient-to-br from-white/[0.03] to-transparent hover:border-indigo-500/25 transition-colors ax-panel"
+      className="ax-panel rounded-xl border border-[#1f2430] bg-gradient-to-br from-white/[0.03] to-transparent p-3 transition-colors hover:border-indigo-500/25 sm:p-4"
       style={{ animationDelay: `${animDelay}ms` }}
     >
-      <div className="text-xs text-muted mb-1">{label}</div>
-      <div className="text-2xl font-semibold tabular-nums tracking-tight">
+      <div className="mb-1 text-[11px] text-muted sm:text-xs">{label}</div>
+      <div className="text-xl font-semibold tracking-tight tabular-nums sm:text-2xl">
         {raw ? value : counted}
       </div>
     </div>
@@ -862,11 +885,11 @@ function Stat({
 function InfoChip({ label, value, delay = 0 }: { label: string; value: string; delay?: number }) {
   return (
     <div
-      className="rounded-xl border border-[#1f2430] px-3 py-2 bg-[#12151c]/60 ax-panel"
+      className="ax-panel min-w-0 rounded-xl border border-[#1f2430] bg-[#12151c]/60 px-3 py-2"
       style={{ animationDelay: `${delay}ms` }}
     >
       <span className="text-muted">{label}: </span>
-      <span className="font-medium capitalize">{value}</span>
+      <span className="break-words font-medium capitalize">{value}</span>
     </div>
   );
 }
@@ -874,11 +897,11 @@ function InfoChip({ label, value, delay = 0 }: { label: string; value: string; d
 function Panel({ title, children, delay = 0 }: { title: string; children: ReactNode; delay?: number }) {
   return (
     <div
-      className="rounded-xl border border-[#1f2430] p-4 space-y-3 bg-[#0f1219]/40 backdrop-blur-sm hover:border-[#2a3142] transition-colors ax-panel"
+      className="ax-panel min-w-0 space-y-3 rounded-xl border border-[#1f2430] bg-[#0f1219]/40 p-3 backdrop-blur-sm transition-colors hover:border-[#2a3142] sm:p-4"
       style={{ animationDelay: `${delay}ms` }}
     >
       <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
-      {children}
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

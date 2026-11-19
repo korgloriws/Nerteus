@@ -201,6 +201,22 @@ export function PostExperience({
         {children}
       </article>
 
+      {reading && products.length > 0 ? (
+        <section className="mx-auto w-full max-w-6xl space-y-4 px-3 sm:px-4 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="fluid-h2 font-semibold">Produtos relacionados</h2>
+            <Link href="/loja" className="whitespace-nowrap text-sm text-primary hover:opacity-80">
+              Ver loja →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {!reading && related.length > 0 ? (
         <section className="space-y-4 px-4 py-8 sm:px-8 lg:px-12">
           <h2 className="text-lg font-bold text-foreground sm:text-xl">Próximas leituras</h2>
@@ -219,22 +235,6 @@ export function PostExperience({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((item) => (
               <PostTile key={item.id} {...item} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {reading && products.length > 0 ? (
-        <section className="mx-auto w-full max-w-6xl space-y-4 px-3 sm:px-4 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="fluid-h2 font-semibold">Produtos relacionados</h2>
-            <Link href="/loja" className="whitespace-nowrap text-sm text-primary hover:opacity-80">
-              Ver loja →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 items-stretch gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>
